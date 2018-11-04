@@ -69,8 +69,7 @@ func main() {
 		markFilter = fmt.Sprintf("-m mark --mark 0x%x/0x%x", *fwMark, *fwMark)
 
 	}
-	if *packetLimit != 0 &&
-		*fwMark == 0 {
+	if *packetLimit != 0 && *fwMark == 0 {
 		log.Fatal("Error: limit requires fwmark")
 	}
 
@@ -90,7 +89,7 @@ func main() {
 				traceRule := fmt.Sprintf("-I %s %s %s -j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", chain, *traceFilter, markFilter, *traceID, ruleIndex, *nflogGroup)
 				ruleIndex++
 				newIptablesConfig = append(newIptablesConfig, traceRule)
-				if table == "raw" && chain == "PREROUTING" {
+				if table == "raw" && chain == "PREROUTING" && *packetLimit != 0 {
 					newIptablesConfig = append(newIptablesConfig, fmt.Sprintf("-I %s %s -m limit --limit %d/minute --limit-burst 1 -j MARK --set-xmark 0x%x/0x%x", chain, *traceFilter, *packetLimit, *fwMark, *fwMark))
 				}
 			}
