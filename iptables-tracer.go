@@ -90,7 +90,7 @@ func main() {
 				ruleIndex++
 				newIptablesConfig = append(newIptablesConfig, traceRule)
 				if table == "raw" && chain == "PREROUTING" && *packetLimit != 0 {
-					newIptablesConfig = append(newIptablesConfig, fmt.Sprintf("-I %s %s -m limit --limit %d/minute --limit-burst 1 -j MARK --set-xmark 0x%x/0x%x", chain, *traceFilter, *packetLimit, *fwMark, *fwMark))
+					newIptablesConfig = append(newIptablesConfig, fmt.Sprintf("-I %s %s -m comment --comment \"iptr:%d:limit\" -m limit --limit %d/minute --limit-burst 1 -j MARK --set-xmark 0x%x/0x%x", chain, *traceFilter, *traceID, *packetLimit, *fwMark, *fwMark))
 				}
 			}
 		}
@@ -212,7 +212,7 @@ func cleanupIptables(cleanupID int) {
 		log.Fatal(err)
 	}
 	iptrRe := regexp.MustCompile(`\s+--nflog-prefix\s+"iptr:(\d+):\d+"`)
-	limitRe := regexp.MustCompile(`-A PREROUTING .* -m limit --limit (\d+)/minute --limit-burst \d+ -j MARK --set-xmark 0x([0-9a-f]+)/0x([0-9a-f]+)`)
+	limitRe := regexp.MustCompile(`\s+--comment\s+"iptr:(\d+):limit"`)
 	for _, line := range lines {
 		if res := iptrRe.FindStringSubmatch(line); res != nil {
 			if id, _ := strconv.Atoi(res[1]); id == cleanupID || cleanupID == 0 {
@@ -220,12 +220,8 @@ func cleanupIptables(cleanupID int) {
 			}
 		}
 		if res := limitRe.FindStringSubmatch(line); res != nil {
-			if limit, _ := strconv.Atoi(res[1]); limit == *packetLimit {
-				if mark, _ := strconv.ParseInt(res[2], 16, 32); int(mark) == *fwMark {
-					if mask, _ := strconv.ParseInt(res[3], 16, 32); int(mask) == *fwMark {
-						continue
-					}
-				}
+			if id, _ := strconv.Atoi(res[1]); id == cleanupID || cleanupID == 0 {
+				continue
 			}
 		}
 		newIptablesConfig = append(newIptablesConfig, line)
