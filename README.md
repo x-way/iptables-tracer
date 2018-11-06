@@ -6,11 +6,11 @@ Usage
 
 ```
 $ iptables-tracer -f "-s 192.0.2.123 -d 203.0.113.113 -p tcp --dport 443" -t 30s
-Nov  4 22:24:31.638 raw    PREROUTING
-Nov  4 22:24:31.639 mangle PREROUTING
-Nov  4 22:24:31.639 nat    PREROUTING
-Nov  4 22:24:31.639 mangle FORWARD
-Nov  4 22:24:31.639 filter FORWARD
-Nov  4 22:24:31.640 mangle POSTROUTING
-Nov  4 22:24:31.640 nat    POSTROUTING
+Nov  6 07:14:51.584 raw    PREROUTING                     192.0.2.123:47010 > 203.0.113.113:443 (TCP)
+Nov  6 07:14:51.585 mangle PREROUTING                     192.0.2.123:47010 > 203.0.113.113:443 (TCP)
+Nov  6 07:14:51.585 nat    PREROUTING                     192.0.2.123:47010 > 203.0.113.113:443 (TCP)
+Nov  6 07:14:51.586 mangle FORWARD                        192.0.2.123:47010 > 203.0.113.113:443 (TCP)
+Nov  6 07:14:51.591 filter FORWARD                        192.0.2.123:47010 > 203.0.113.113:443 (TCP)
+Nov  6 07:14:51.592 mangle POSTROUTING                    192.0.2.123:47010 > 203.0.113.113:443 (TCP)
+Nov  6 07:14:51.592 nat    POSTROUTING                    192.0.2.123:47010 > 203.0.113.113:443 (TCP)
 ```

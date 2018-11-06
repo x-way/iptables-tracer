@@ -6,6 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/florianl/go-nflog"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 	"golang.org/x/sys/unix"
 	"io"
 	"log"
@@ -135,7 +137,7 @@ func main() {
 				ruleID, _ := strconv.Atoi(res[2])
 				ts := time.Now()
 				if myRule, ok := ruleMap[ruleID]; ok {
-					printRule(ts, myRule)
+					printRule(ts, myRule, m[nflog.NfUlaAttrPayload])
 				}
 			}
 		}
@@ -153,11 +155,22 @@ func main() {
 	}
 }
 
-func printRule(ts time.Time, rule iptablesRule) {
+func printRule(ts time.Time, rule iptablesRule, payload []byte) {
+	packetStr := ""
+	packet := gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default)
+	if ip4Layer := packet.Layer(layers.LayerTypeIPv4); ip4Layer != nil {
+		ip4, _ := ip4Layer.(*layers.IPv4)
+		if transport := packet.TransportLayer(); transport != nil {
+			srcPort, dstPort := transport.TransportFlow().Endpoints()
+			packetStr = fmt.Sprintf("%s:%s > %s:%s (%s)", ip4.SrcIP, srcPort, ip4.DstIP, dstPort, transport.LayerType())
+		} else {
+			packetStr = fmt.Sprintf("%s > %s (%s)", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType())
+		}
+	}
 	if rule.ChainEntry {
-		fmt.Printf("%s %-6s %-30s\n", ts.Format(time.StampMilli), rule.Table, rule.Chain)
+		fmt.Printf("%s %-6s %-30s %s\n", ts.Format(time.StampMilli), rule.Table, rule.Chain, packetStr)
 	} else {
-		fmt.Printf("%s %-6s %-30s %s\n", ts.Format(time.StampMilli), rule.Table, rule.Chain, rule.Rule)
+		fmt.Printf("%s %-6s %-30s %s %s\n", ts.Format(time.StampMilli), rule.Table, rule.Chain, rule.Rule, packetStr)
 	}
 }
 
