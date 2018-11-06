@@ -155,22 +155,73 @@ func main() {
 	}
 }
 
-func printRule(ts time.Time, rule iptablesRule, payload []byte) {
-	packetStr := ""
-	packet := gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default)
+func formatPacket(packet gopacket.Packet) string {
 	if ip4Layer := packet.Layer(layers.LayerTypeIPv4); ip4Layer != nil {
 		ip4, _ := ip4Layer.(*layers.IPv4)
-		if transport := packet.TransportLayer(); transport != nil {
-			srcPort, dstPort := transport.TransportFlow().Endpoints()
-			packetStr = fmt.Sprintf("%s:%s > %s:%s (%s)", ip4.SrcIP, srcPort, ip4.DstIP, dstPort, transport.LayerType())
-		} else {
-			packetStr = fmt.Sprintf("%s > %s (%s)", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType())
+		length := int(ip4.Length) - int(ip4.IHL)*4
+		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+			udp, _ := udpLayer.(*layers.UDP)
+			length = int(udp.Length) - 8
+			return fmt.Sprintf("%s.%d > %s.%d: UDP, length %d", ip4.SrcIP, udp.SrcPort, ip4.DstIP, udp.DstPort, length)
 		}
+		if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
+			tcp, _ := tcpLayer.(*layers.TCP)
+			length = length - int(tcp.DataOffset)*4
+			flags := ""
+			if tcp.FIN {
+				flags = flags + "F"
+			}
+			if tcp.SYN {
+				flags = flags + "S"
+			}
+			if tcp.RST {
+				flags = flags + "R"
+			}
+			if tcp.PSH {
+				flags = flags + "P"
+			}
+			if tcp.ACK {
+				flags = flags + "."
+			}
+			if tcp.URG {
+				flags = flags + "U"
+			}
+			if tcp.ECE {
+				flags = flags + "E"
+			}
+			if tcp.CWR {
+				flags = flags + "W"
+			}
+			if tcp.NS {
+				flags = flags + "N"
+			}
+			if flags == "" {
+				flags = "none"
+			}
+			return fmt.Sprintf("%s.%d > %s.%d: Flags [%s], seq %d, win %d, length %d", ip4.SrcIP, tcp.SrcPort, ip4.DstIP, tcp.DstPort, flags, tcp.Seq, tcp.Window, length)
+		}
+		if icmpLayer := packet.Layer(layers.LayerTypeICMPv4); icmpLayer != nil {
+			icmp, _ := icmpLayer.(*layers.ICMPv4)
+			switch icmpType := icmp.TypeCode.Type(); icmpType {
+			case layers.ICMPv4TypeEchoRequest:
+				return fmt.Sprintf("%s > %s: ICMP echo request, id %d, seq %d, length %d", ip4.SrcIP, ip4.DstIP, icmp.Id, icmp.Seq, length)
+			case layers.ICMPv4TypeEchoReply:
+				return fmt.Sprintf("%s > %s: ICMP echo reply, id %d, seq %d, length %d", ip4.SrcIP, ip4.DstIP, icmp.Id, icmp.Seq, length)
+			default:
+				return fmt.Sprintf("%s > %s: ICMP, length %d", ip4.SrcIP, ip4.DstIP, length)
+			}
+		}
+		return fmt.Sprintf("%s > %s: %s, length %d", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType(), length)
 	}
+	return ""
+}
+
+func printRule(ts time.Time, rule iptablesRule, payload []byte) {
+	packetStr := formatPacket(gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default))
 	if rule.ChainEntry {
-		fmt.Printf("%s %-6s %-30s %s\n", ts.Format(time.StampMilli), rule.Table, rule.Chain, packetStr)
+		fmt.Printf("%s %-6s %-30s %s\n", ts.Format("15:04:05.000000"), rule.Table, rule.Chain, packetStr)
 	} else {
-		fmt.Printf("%s %-6s %-30s %s %s\n", ts.Format(time.StampMilli), rule.Table, rule.Chain, rule.Rule, packetStr)
+		fmt.Printf("%s %-6s %-30s %s %s\n", ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, packetStr)
 	}
 }
 
