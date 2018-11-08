@@ -77,12 +77,16 @@ func main() {
 
 	table := ""
 	ruleIndex := 0
+	maxLength := 0
 	for _, line := range lines {
 		if res := chainRe.FindStringSubmatch(line); res != nil {
 			if table == "" {
 				log.Fatal("Error: found chain definition before initial table definition")
 			}
 			chainMap[table] = append(chainMap[table], res[1])
+			if len(res[1]) > maxLength {
+				maxLength = len(res[1])
+			}
 		}
 		if res := commitRe.FindStringSubmatch(line); res != nil {
 			// we are at the end of a table, add aritificial rules for all chains in this table
@@ -137,7 +141,7 @@ func main() {
 				ruleID, _ := strconv.Atoi(res[2])
 				ts := time.Now()
 				if myRule, ok := ruleMap[ruleID]; ok {
-					printRule(ts, myRule, m[nflog.NfUlaAttrPayload])
+					printRule(maxLength, ts, myRule, m[nflog.NfUlaAttrPayload])
 				}
 			}
 		}
@@ -216,12 +220,14 @@ func formatPacket(packet gopacket.Packet) string {
 	return ""
 }
 
-func printRule(ts time.Time, rule iptablesRule, payload []byte) {
+func printRule(maxLength int, ts time.Time, rule iptablesRule, payload []byte) {
 	packetStr := formatPacket(gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default))
 	if rule.ChainEntry {
-		fmt.Printf("%s %-6s %-30s %s\n", ts.Format("15:04:05.000000"), rule.Table, rule.Chain, packetStr)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %%s\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, packetStr)
 	} else {
-		fmt.Printf("%s %-6s %-30s %s %s\n", ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, packetStr)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %s %%s\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, packetStr)
 	}
 }
 
