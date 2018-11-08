@@ -141,7 +141,7 @@ func main() {
 				ruleID, _ := strconv.Atoi(res[2])
 				ts := time.Now()
 				if myRule, ok := ruleMap[ruleID]; ok {
-					printRule(maxLength, ts, myRule, m[nflog.NfUlaAttrPayload])
+					printRule(maxLength, ts, myRule, m[nflog.NfUlaAttrMark], m[nflog.NfUlaAttrPayload])
 				}
 			}
 		}
@@ -220,14 +220,14 @@ func formatPacket(packet gopacket.Packet) string {
 	return ""
 }
 
-func printRule(maxLength int, ts time.Time, rule iptablesRule, payload []byte) {
+func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark []byte, payload []byte) {
 	packetStr := formatPacket(gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default))
 	if rule.ChainEntry {
-		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %%s\n", maxLength)
-		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, packetStr)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, fwMark, packetStr)
 	} else {
-		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %s %%s\n", maxLength)
-		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, packetStr)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %s 0x%%08x %%s\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, fwMark, packetStr)
 	}
 }
 
