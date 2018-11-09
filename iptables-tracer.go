@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"github.com/florianl/go-nflog"
@@ -11,6 +13,7 @@ import (
 	"golang.org/x/sys/unix"
 	"io"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"regexp"
@@ -139,9 +142,8 @@ func main() {
 		if res := prefixRe.FindStringSubmatch(prefix); res != nil {
 			if id, _ := strconv.Atoi(res[1]); id == *traceID {
 				ruleID, _ := strconv.Atoi(res[2])
-				ts := time.Now()
 				if myRule, ok := ruleMap[ruleID]; ok {
-					printRule(maxLength, ts, myRule, m[nflog.NfUlaAttrMark], m[nflog.NfUlaAttrPayload])
+					printRule(maxLength, time.Now(), myRule, m[nflog.NfUlaAttrMark], getIfaceName(m[nflog.NfUlaAttrIfindexIndev]), getIfaceName(m[nflog.NfUlaAttrIfindexOutdev]), m[nflog.NfUlaAttrPayload])
 				}
 			}
 		}
@@ -157,6 +159,18 @@ func main() {
 	// block until context expires
 	case <-ctx.Done():
 	}
+}
+
+func getIfaceName(data []byte) string {
+	var iface *net.Interface
+	var err error
+	reader := bytes.NewReader(data)
+	var index uint32
+	binary.Read(reader, binary.BigEndian, &index)
+	if iface, err = net.InterfaceByIndex(int(index)); err != nil {
+		return ""
+	}
+	return iface.Name
 }
 
 func formatPacket(packet gopacket.Packet) string {
@@ -220,14 +234,14 @@ func formatPacket(packet gopacket.Packet) string {
 	return ""
 }
 
-func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark []byte, payload []byte) {
+func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark []byte, iif string, oif string, payload []byte) {
 	packetStr := formatPacket(gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default))
 	if rule.ChainEntry {
-		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s\n", maxLength)
-		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, fwMark, packetStr)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, fwMark, packetStr, iif, oif)
 	} else {
-		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %s 0x%%08x %%s\n", maxLength)
-		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, fwMark, packetStr)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %s 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, fwMark, packetStr, iif, oif)
 	}
 }
 
