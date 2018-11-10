@@ -181,7 +181,173 @@ func formatPacket(packet gopacket.Packet) string {
 		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 			udp, _ := udpLayer.(*layers.UDP)
 			length = int(udp.Length) - 8
-			return fmt.Sprintf("%s.%d > %s.%d: UDP, length %d", ip4.SrcIP, udp.SrcPort, ip4.DstIP, udp.DstPort, length)
+			udpFlowStr := fmt.Sprintf("%s.%d > %s.%d:", ip4.SrcIP, udp.SrcPort, ip4.DstIP, udp.DstPort)
+			if udp.SrcPort == 53 || udp.DstPort == 53 || udp.SrcPort == 5353 || udp.DstPort == 5353 {
+				if dnsLayer := packet.Layer(layers.LayerTypeDNS); dnsLayer != nil {
+					dns, _ := dnsLayer.(*layers.DNS)
+					dnsStr := ""
+					if dns.QR {
+						dnsStr = fmt.Sprintf("%d", dns.ID)
+						switch dns.OpCode {
+						case layers.DNSOpCodeQuery:
+							// nothing
+						case layers.DNSOpCodeIQuery:
+							dnsStr = dnsStr + " inv_q"
+						case layers.DNSOpCodeStatus:
+							dnsStr = dnsStr + " stat"
+						case 3:
+							dnsStr = dnsStr + " op3"
+						case layers.DNSOpCodeNotify:
+							dnsStr = dnsStr + " notify"
+						case layers.DNSOpCodeUpdate:
+							dnsStr = dnsStr + " update"
+						case 6:
+							dnsStr = dnsStr + " op6"
+						case 7:
+							dnsStr = dnsStr + " op7"
+						case 8:
+							dnsStr = dnsStr + " op8"
+						case 9:
+							dnsStr = dnsStr + " updateA"
+						case 10:
+							dnsStr = dnsStr + " updateD"
+						case 11:
+							dnsStr = dnsStr + " updateDA"
+						case 12:
+							dnsStr = dnsStr + " updateM"
+						case 13:
+							dnsStr = dnsStr + " updateMA"
+						case 14:
+							dnsStr = dnsStr + " zoneInit"
+						case 15:
+							dnsStr = dnsStr + " zoneRef"
+						}
+						switch dns.ResponseCode {
+						case layers.DNSResponseCodeNoErr:
+							// nothing
+						case layers.DNSResponseCodeFormErr:
+							dnsStr = dnsStr + " FormErr"
+						case layers.DNSResponseCodeServFail:
+							dnsStr = dnsStr + " ServFail"
+						case layers.DNSResponseCodeNXDomain:
+							dnsStr = dnsStr + " NXDomain"
+						case layers.DNSResponseCodeNotImp:
+							dnsStr = dnsStr + " NotImp"
+						case layers.DNSResponseCodeRefused:
+							dnsStr = dnsStr + " Refused"
+						case layers.DNSResponseCodeYXDomain:
+							dnsStr = dnsStr + " YXDomain"
+						case layers.DNSResponseCodeYXRRSet:
+							dnsStr = dnsStr + " YXRRSet"
+						case layers.DNSResponseCodeNXRRSet:
+							dnsStr = dnsStr + " NXRRSet"
+						case layers.DNSResponseCodeNotAuth:
+							dnsStr = dnsStr + " NotAuth"
+						case layers.DNSResponseCodeNotZone:
+							dnsStr = dnsStr + " NotZone"
+						case 11:
+							dnsStr = dnsStr + " Resp11"
+						case 12:
+							dnsStr = dnsStr + " Resp12"
+						case 13:
+							dnsStr = dnsStr + " Resp13"
+						case 14:
+							dnsStr = dnsStr + " Resp14"
+						case 15:
+							dnsStr = dnsStr + " NoChange"
+						}
+						if dns.AA {
+							dnsStr = dnsStr + "*"
+						}
+						if !dns.RA {
+							dnsStr = dnsStr + "-"
+						}
+						if dns.TC {
+							dnsStr = dnsStr + "|"
+						}
+						if (dns.Z & 0x2) == 0x2 {
+							dnsStr = dnsStr + "$"
+						}
+
+						if dns.QDCount != 1 {
+							dnsStr = fmt.Sprintf("%s [%dq]", dnsStr, dns.QDCount)
+						}
+						dnsStr = fmt.Sprintf("%s %d/%d/%d", dnsStr, dns.ANCount, dns.NSCount, dns.ARCount)
+						if dns.ANCount > 0 {
+							for i, r := range dns.Answers {
+								if i > 0 {
+									dnsStr = dnsStr + ","
+								}
+								if r.Class != layers.DNSClassIN && r.Type != 41 {
+									dnsStr = dnsStr + " " + r.Class.String()
+								}
+								dnsStr = dnsStr + " " + r.Type.String()
+
+								switch r.Type {
+								case layers.DNSTypeA, layers.DNSTypeAAAA:
+									dnsStr = dnsStr + " " + r.IP.String()
+								case layers.DNSTypeCNAME:
+									dnsStr = dnsStr + " " + string(r.CNAME) + "."
+								case layers.DNSTypeNS:
+									dnsStr = dnsStr + " " + string(r.NS) + "."
+								case layers.DNSTypeSOA:
+									// nothing
+								case layers.DNSTypeMX:
+									dnsStr = fmt.Sprintf("%s %s. %d", dnsStr, string(r.MX.Name), r.MX.Preference)
+								case layers.DNSTypeTXT:
+									for _, s := range r.TXTs {
+										dnsStr = fmt.Sprintf("%s \"%s\"", dnsStr, string(s))
+									}
+								case layers.DNSTypeSRV:
+									dnsStr = fmt.Sprintf("%s %s.:%d %d %d", dnsStr, string(r.SRV.Name), r.SRV.Port, r.SRV.Priority, r.SRV.Weight)
+								default:
+									// nothing
+								}
+							}
+						}
+					} else {
+						dnsStr = fmt.Sprintf("%d", dns.ID)
+						if dns.RD {
+							dnsStr = dnsStr + "+"
+						}
+						if (dns.Z & 0x1) == 0x1 {
+							dnsStr = dnsStr + "%"
+						}
+						if dns.OpCode == layers.DNSOpCodeIQuery {
+							if dns.QDCount > 0 {
+								dnsStr = fmt.Sprintf("%s [%dq]", dnsStr, dns.QDCount)
+							}
+							if dns.ANCount != 1 {
+								dnsStr = fmt.Sprintf("%s [%da]", dnsStr, dns.ANCount)
+							}
+						} else {
+							if dns.ANCount > 0 {
+								dnsStr = fmt.Sprintf("%s [%da]", dnsStr, dns.ANCount)
+							}
+							if dns.QDCount != 1 {
+								dnsStr = fmt.Sprintf("%s [%dq]", dnsStr, dns.QDCount)
+							}
+						}
+						if dns.NSCount > 0 {
+							dnsStr = fmt.Sprintf("%s [%dn]", dnsStr, dns.NSCount)
+						}
+						if dns.ARCount > 0 {
+							dnsStr = fmt.Sprintf("%s [%dau]", dnsStr, dns.ARCount)
+						}
+						if dns.QDCount > 0 {
+							for _, q := range dns.Questions {
+								dnsStr = dnsStr + " " + q.Type.String()
+								if q.Class != layers.DNSClassIN {
+									dnsStr = dnsStr + " " + q.Class.String()
+								}
+								dnsStr = dnsStr + "? " + string(q.Name) + "."
+							}
+						}
+					}
+					return fmt.Sprintf("%s %s (%d)", udpFlowStr, dnsStr, length)
+				}
+			}
+			return fmt.Sprintf("%s UDP, length %d", udpFlowStr, length)
 		}
 		if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 			tcp, _ := tcpLayer.(*layers.TCP)
