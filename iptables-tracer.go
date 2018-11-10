@@ -7,10 +7,6 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
-	"github.com/florianl/go-nflog"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
-	"golang.org/x/sys/unix"
 	"io"
 	"log"
 	"net"
@@ -19,6 +15,11 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/florianl/go-nflog"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
+	"golang.org/x/sys/unix"
 )
 
 type iptablesRule struct {
@@ -229,7 +230,7 @@ func formatPacket(packet gopacket.Packet) string {
 				return fmt.Sprintf("%s > %s: ICMP, length %d", ip4.SrcIP, ip4.DstIP, length)
 			}
 		}
-		return fmt.Sprintf("%s > %s: %s, length %d", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType(), length)
+		return fmt.Sprintf("%s > %s: %s, length %d", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType().String(), length)
 	}
 	return ""
 }
@@ -240,7 +241,7 @@ func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark []byte, ii
 		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
 		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, fwMark, packetStr, iif, oif)
 	} else {
-		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %s 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %%s 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
 		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, fwMark, packetStr, iif, oif)
 	}
 }
@@ -257,10 +258,7 @@ func writeToCommand(cmd *exec.Cmd, lines []string) error {
 		io.WriteString(cmdWriter, line+"\n")
 	}
 	cmdWriter.Close()
-	if err = cmd.Wait(); err != nil {
-		return err
-	}
-	return nil
+	return cmd.Wait()
 }
 
 func readFromCommand(cmd *exec.Cmd) ([]string, error) {
