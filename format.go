@@ -43,6 +43,25 @@ func formatPacketTCP(tcp *layers.TCP, src, dst string, length int) string {
 	return fmt.Sprintf("%s.%d > %s.%d: Flags [%s], seq %d, win %d, length %d", src, tcp.SrcPort, dst, tcp.DstPort, flags, tcp.Seq, tcp.Window, length)
 }
 
+func formatPacketICMPv6(packet *gopacket.Packet, icmp *layers.ICMPv6, src, dst string, length int) string {
+	switch icmpType := icmp.TypeCode.Type(); icmpType {
+	case layers.ICMPv6TypeEchoRequest:
+		if echoLayer := (*packet).Layer(layers.LayerTypeICMPv6Echo); echoLayer != nil {
+			echo, _ := echoLayer.(*layers.ICMPv6Echo)
+			return fmt.Sprintf("%s > %s: ICMP6 echo request, id %d, seq %d, length %d", src, dst, echo.Identifier, echo.SeqNumber, length)
+		}
+		return fmt.Sprintf("%s > %s: ICMP6 echo request, length %d", src, dst, length)
+	case layers.ICMPv6TypeEchoReply:
+		if echoLayer := (*packet).Layer(layers.LayerTypeICMPv6Echo); echoLayer != nil {
+			echo, _ := echoLayer.(*layers.ICMPv6Echo)
+			return fmt.Sprintf("%s > %s: ICMP6 echo reply, id %d, seq %d, length %d", src, dst, echo.Identifier, echo.SeqNumber, length)
+		}
+		return fmt.Sprintf("%s > %s: ICMP6 echo reply, length %d", src, dst, length)
+	default:
+		return fmt.Sprintf("%s > %s: ICMP6, length %d", src, dst, length)
+	}
+}
+
 func formatPacketICMPv4(icmp *layers.ICMPv4, src, dst string, length int) string {
 	switch icmpType := icmp.TypeCode.Type(); icmpType {
 	case layers.ICMPv4TypeEchoRequest:
@@ -241,6 +260,10 @@ func formatPacket(payload []byte, isIPv6 bool) string {
 			if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 				tcp, _ := tcpLayer.(*layers.TCP)
 				return "IP6 " + formatPacketTCP(tcp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+			}
+			if icmpLayer := packet.Layer(layers.LayerTypeICMPv6); icmpLayer != nil {
+				icmp, _ := icmpLayer.(*layers.ICMPv6)
+				return "IP6 " + formatPacketICMPv6(&packet, icmp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
 			}
 			return fmt.Sprintf("IP6 %s > %s: %s, length %d", ip6.SrcIP, ip6.DstIP, ip6.NextLayerType().String(), length)
 		}
