@@ -228,36 +228,41 @@ func formatPacketUDP(packet gopacket.Packet, udp *layers.UDP, src, dst string, l
 	return fmt.Sprintf("%s.%d > %s.%d: UDP, length %d", src, udp.SrcPort, dst, udp.DstPort, length)
 }
 
-func formatPacket(packet gopacket.Packet) string {
-	if ip4Layer := packet.Layer(layers.LayerTypeIPv4); ip4Layer != nil {
-		ip4, _ := ip4Layer.(*layers.IPv4)
-		length := int(ip4.Length) - int(ip4.IHL)*4
-		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-			udp, _ := udpLayer.(*layers.UDP)
-			return "IP " + formatPacketUDP(packet, udp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+func formatPacket(payload []byte, isIPv6 bool) string {
+	if isIPv6 {
+		packet := gopacket.NewPacket(payload, layers.LayerTypeIPv6, gopacket.Default)
+		if ip6Layer := packet.Layer(layers.LayerTypeIPv6); ip6Layer != nil {
+			ip6, _ := ip6Layer.(*layers.IPv6)
+			length := int(ip6.Length)
+			if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+				udp, _ := udpLayer.(*layers.UDP)
+				return "IP6 " + formatPacketUDP(packet, udp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+			}
+			if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
+				tcp, _ := tcpLayer.(*layers.TCP)
+				return "IP6 " + formatPacketTCP(tcp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+			}
+			return fmt.Sprintf("IP6 %s > %s: %s, length %d", ip6.SrcIP, ip6.DstIP, ip6.NextLayerType().String(), length)
 		}
-		if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-			tcp, _ := tcpLayer.(*layers.TCP)
-			return "IP " + formatPacketTCP(tcp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+	} else {
+		packet := gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default)
+		if ip4Layer := packet.Layer(layers.LayerTypeIPv4); ip4Layer != nil {
+			ip4, _ := ip4Layer.(*layers.IPv4)
+			length := int(ip4.Length) - int(ip4.IHL)*4
+			if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+				udp, _ := udpLayer.(*layers.UDP)
+				return "IP " + formatPacketUDP(packet, udp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+			}
+			if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
+				tcp, _ := tcpLayer.(*layers.TCP)
+				return "IP " + formatPacketTCP(tcp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+			}
+			if icmpLayer := packet.Layer(layers.LayerTypeICMPv4); icmpLayer != nil {
+				icmp, _ := icmpLayer.(*layers.ICMPv4)
+				return "IP " + formatPacketICMPv4(icmp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+			}
+			return fmt.Sprintf("IP %s > %s: %s, length %d", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType().String(), length)
 		}
-		if icmpLayer := packet.Layer(layers.LayerTypeICMPv4); icmpLayer != nil {
-			icmp, _ := icmpLayer.(*layers.ICMPv4)
-			return "IP " + formatPacketICMPv4(icmp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
-		}
-		return fmt.Sprintf("IP %s > %s: %s, length %d", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType().String(), length)
-	}
-	if ip6Layer := packet.Layer(layers.LayerTypeIPv6); ip6Layer != nil {
-		ip6, _ := ip6Layer.(*layers.IPv6)
-		length := int(ip6.Length)
-		if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-			udp, _ := udpLayer.(*layers.UDP)
-			return "IP6 " + formatPacketUDP(packet, udp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
-		}
-		if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-			tcp, _ := tcpLayer.(*layers.TCP)
-			return "IP6 " + formatPacketTCP(tcp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
-		}
-		return fmt.Sprintf("IP6 %s > %s: %s, length %d", ip6.SrcIP, ip6.DstIP, ip6.NextLayerType().String(), length)
 	}
 	return ""
 }

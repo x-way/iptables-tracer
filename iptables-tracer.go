@@ -17,8 +17,6 @@ import (
 	"time"
 
 	"github.com/florianl/go-nflog"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"golang.org/x/sys/unix"
 )
 
@@ -186,12 +184,7 @@ func getIfaceName(data []byte) string {
 }
 
 func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark []byte, iif string, oif string, payload []byte) {
-	var packetStr string
-	if *ip6tables {
-		packetStr = formatPacket(gopacket.NewPacket(payload, layers.LayerTypeIPv6, gopacket.Default))
-	} else {
-		packetStr = formatPacket(gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default))
-	}
+	packetStr := formatPacket(payload, *ip6tables)
 	if rule.ChainEntry {
 		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
 		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, fwMark, packetStr, iif, oif)
