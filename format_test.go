@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 
+	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
 
@@ -52,6 +53,27 @@ func TestFormatPacketTCP(t *testing.T) {
 		got := formatPacketTCP(table.tcp, table.src, table.dst, table.length)
 		if got != table.expected {
 			t.Errorf("formatPacketTCP was incorrect, got: '%s', expected: '%s'.", got, table.expected)
+		}
+	}
+}
+
+func TestFormatPacketUDP(t *testing.T) {
+	tables := []struct {
+		packet   *gopacket.Packet
+		udp      *layers.UDP
+		src      string
+		dst      string
+		length   int
+		expected string
+	}{
+		{nil, &layers.UDP{Length: 1234}, "test-src", "test-dst", 1234, "test-src.0 > test-dst.0: UDP, length 1226"},
+		{nil, &layers.UDP{Length: 1234, SrcPort: 68, DstPort: 67}, "test-src", "test-dst", 1234, "test-src.68 > test-dst.67: UDP, length 1226"},
+	}
+
+	for _, table := range tables {
+		got := formatPacketUDP(table.packet, table.udp, table.src, table.dst, table.length)
+		if got != table.expected {
+			t.Errorf("formatPacketUDP was incorrect, got: '%s', expected: '%s'.", got, table.expected)
 		}
 	}
 }

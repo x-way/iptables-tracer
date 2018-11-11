@@ -217,10 +217,10 @@ func formatPacketDNS(dns *layers.DNS, src, dst string, srcPort, dstPort, length 
 	return fmt.Sprintf("%s.%d > %s.%d: %s (%d)", src, srcPort, dst, dstPort, dnsStr, length)
 }
 
-func formatPacketUDP(packet gopacket.Packet, udp *layers.UDP, src, dst string, length int) string {
+func formatPacketUDP(packet *gopacket.Packet, udp *layers.UDP, src, dst string, length int) string {
 	length = int(udp.Length) - 8
 	if udp.SrcPort == 53 || udp.DstPort == 53 || udp.SrcPort == 5353 || udp.DstPort == 5353 {
-		if dnsLayer := packet.Layer(layers.LayerTypeDNS); dnsLayer != nil {
+		if dnsLayer := (*packet).Layer(layers.LayerTypeDNS); dnsLayer != nil {
 			dns, _ := dnsLayer.(*layers.DNS)
 			return formatPacketDNS(dns, src, dst, int(udp.SrcPort), int(udp.DstPort), length)
 		}
@@ -236,7 +236,7 @@ func formatPacket(payload []byte, isIPv6 bool) string {
 			length := int(ip6.Length)
 			if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 				udp, _ := udpLayer.(*layers.UDP)
-				return "IP6 " + formatPacketUDP(packet, udp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+				return "IP6 " + formatPacketUDP(&packet, udp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
 			}
 			if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 				tcp, _ := tcpLayer.(*layers.TCP)
@@ -251,7 +251,7 @@ func formatPacket(payload []byte, isIPv6 bool) string {
 			length := int(ip4.Length) - int(ip4.IHL)*4
 			if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 				udp, _ := udpLayer.(*layers.UDP)
-				return "IP " + formatPacketUDP(packet, udp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+				return "IP " + formatPacketUDP(&packet, udp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
 			}
 			if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 				tcp, _ := tcpLayer.(*layers.TCP)
