@@ -1,0 +1,16 @@
+language: go
+
+os: linux
+
+go:
+  - "1.10.x"
+  - "1.11.x"
+  - master
+
+install:
+  - go get golang.org/x/lint/golint
+  - go get -d ./...
+
+script:
+  - go vet ./...
+  - golint -set_exit_status ./...
