@@ -99,6 +99,32 @@ func TestFormatPacketDNS(t *testing.T) {
 		{&layers.DNS{OpCode: 1, ID: 999, RD: true, QDCount: 1, ANCount: 2, NSCount: 10, ARCount: 5}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 999+ [1q] [2a] [10n] [5au] (1234)"},
 		{&layers.DNS{OpCode: 1, ID: 999, RD: true, QDCount: 2, ANCount: 1, NSCount: 10, ARCount: 5}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 999+ [2q] [10n] [5au] (1234)"},
 		{&layers.DNS{OpCode: 1, ID: 999, RD: true, QDCount: 1, ANCount: 0, NSCount: 10, ARCount: 5}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 999+ [1q] [0a] [10n] [5au] (1234)"},
+
+		{&layers.DNS{QR: true}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, AA: true, TC: true, Z: 2, QDCount: 1}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0*-|$ 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 1, ResponseCode: 1}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 inv_q FormErr- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 2, ResponseCode: 2}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 stat ServFail- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 3, ResponseCode: 3}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 op3 NXDomain- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 4, ResponseCode: 4}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 notify NotImp- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 5, ResponseCode: 5}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 update Refused- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 6, ResponseCode: 6}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 op6 YXDomain- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 7, ResponseCode: 7}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 op7 YXRRSet- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 8, ResponseCode: 8}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 op8 NXRRSet- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 9, ResponseCode: 9}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 updateA NotAuth- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 10, ResponseCode: 10}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 updateD NotZone- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 11, ResponseCode: 11}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 updateDA Resp11- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 12, ResponseCode: 12}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 updateM Resp12- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 13, ResponseCode: 13}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 updateMA Resp13- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 14, ResponseCode: 14}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 zoneInit Resp14- [0q] 0/0/0 (1234)"},
+		{&layers.DNS{QR: true, OpCode: 15, ResponseCode: 15}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0 zoneRef NoChange- [0q] 0/0/0 (1234)"},
+
+		{&layers.DNS{QR: true, ANCount: 5, Answers: []layers.DNSResourceRecord{layers.DNSResourceRecord{Class: 3}}}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 5/0/0 CH Unknown (1234)"},
+		{&layers.DNS{QR: true, ANCount: 5, Answers: []layers.DNSResourceRecord{layers.DNSResourceRecord{Class: 1, Type: layers.DNSTypeNS, NS: []byte("nsteststring")}}}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 5/0/0 NS nsteststring. (1234)"},
+		{&layers.DNS{QR: true, ANCount: 5, Answers: []layers.DNSResourceRecord{layers.DNSResourceRecord{Class: 1, Type: layers.DNSTypeMX, MX: layers.DNSMX{Name: []byte("mxteststring")}}}}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 5/0/0 MX mxteststring. 0 (1234)"},
+		{&layers.DNS{QR: true, ANCount: 5, Answers: []layers.DNSResourceRecord{layers.DNSResourceRecord{Type: layers.DNSTypeSRV, SRV: layers.DNSSRV{Name: []byte("srvteststring"), Port: 999, Priority: 2, Weight: 5}}}}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 5/0/0 Unknown SRV srvteststring.:999 2 5 (1234)"},
+		{&layers.DNS{QR: true, ANCount: 5, Answers: []layers.DNSResourceRecord{layers.DNSResourceRecord{Class: 1, Type: layers.DNSTypeSOA}}}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 5/0/0 SOA (1234)"},
+		{&layers.DNS{QR: true, ANCount: 5, Answers: []layers.DNSResourceRecord{layers.DNSResourceRecord{Class: 1, Type: layers.DNSTypeTXT, TXTs: [][]byte{[]byte("foo"),[]byte("bar")}}}}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 5/0/0 TXT \"foo\" \"bar\" (1234)"},
+		{&layers.DNS{QR: true, ANCount: 5, Answers: []layers.DNSResourceRecord{layers.DNSResourceRecord{Class: 1, Type: layers.DNSTypeHINFO}}}, "test-src", "test-dst", 10, 20, 1234, "test-src.10 > test-dst.20: 0- [0q] 5/0/0 HINFO (1234)"},
 	}
 
 	for _, table := range tables {
