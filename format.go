@@ -247,23 +247,64 @@ func formatPacketUDP(packet *gopacket.Packet, udp *layers.UDP, src, dst string, 
 	return fmt.Sprintf("%s.%d > %s.%d: UDP, length %d", src, udp.SrcPort, dst, udp.DstPort, length)
 }
 
+func formatPacketOSPF(ospf layers.OSPF, src, dst string, length int) string {
+	var ospfType string
+	switch ospf.Type {
+	case layers.OSPFHello:
+		ospfType = "Hello"
+	case layers.OSPFDatabaseDescription:
+		ospfType = "Database Description"
+	case layers.OSPFLinkStateRequest:
+		ospfType = "LS-Request"
+	case layers.OSPFLinkStateUpdate:
+		ospfType = "LS-Update"
+	case layers.OSPFLinkStateAcknowledgment:
+		ospfType = "LS-Ack"
+	default:
+		if ospf.Version == 3 {
+			ospfType = fmt.Sprintf("unknown packet type (%d)", ospf.Type)
+		} else {
+			ospfType = fmt.Sprintf("unknown LS-type (%d)", ospf.Type)
+		}
+	}
+	return fmt.Sprintf("%s > %s: OSPFv%d, %s, length %d", src, dst, ospf.Version, ospfType, length)
+}
+
+func formatPacketGRE(gre *layers.GRE, src, dst string, length int) string {
+	return fmt.Sprintf("%s > %s: GREv%d, length %d: %s", src, dst, gre.Version, length, formatPacket(gre.LayerPayload(), false))
+}
 func formatPacket(payload []byte, isIPv6 bool) string {
 	if isIPv6 {
 		packet := gopacket.NewPacket(payload, layers.LayerTypeIPv6, gopacket.Default)
 		if ip6Layer := packet.Layer(layers.LayerTypeIPv6); ip6Layer != nil {
 			ip6, _ := ip6Layer.(*layers.IPv6)
 			length := int(ip6.Length)
-			if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-				udp, _ := udpLayer.(*layers.UDP)
-				return "IP6 " + formatPacketUDP(&packet, udp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
-			}
-			if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-				tcp, _ := tcpLayer.(*layers.TCP)
-				return "IP6 " + formatPacketTCP(tcp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
-			}
-			if icmpLayer := packet.Layer(layers.LayerTypeICMPv6); icmpLayer != nil {
-				icmp, _ := icmpLayer.(*layers.ICMPv6)
-				return "IP6 " + formatPacketICMPv6(&packet, icmp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+			switch ip6.NextLayerType() {
+			case layers.LayerTypeUDP:
+				if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+					udp, _ := udpLayer.(*layers.UDP)
+					return "IP6 " + formatPacketUDP(&packet, udp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+				}
+			case layers.LayerTypeTCP:
+				if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
+					tcp, _ := tcpLayer.(*layers.TCP)
+					return "IP6 " + formatPacketTCP(tcp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+				}
+			case layers.LayerTypeICMPv6:
+				if icmpLayer := packet.Layer(layers.LayerTypeICMPv6); icmpLayer != nil {
+					icmp, _ := icmpLayer.(*layers.ICMPv6)
+					return "IP6 " + formatPacketICMPv6(&packet, icmp, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+				}
+			case layers.LayerTypeOSPF:
+				if ospfLayer := packet.Layer(layers.LayerTypeOSPF); ospfLayer != nil {
+					ospf, _ := ospfLayer.(*layers.OSPFv3)
+					return "IP6 " + formatPacketOSPF(ospf.OSPF, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+				}
+			case layers.LayerTypeGRE:
+				if greLayer := packet.Layer(layers.LayerTypeGRE); greLayer != nil {
+					gre, _ := greLayer.(*layers.GRE)
+					return "IP6 " + formatPacketGRE(gre, ip6.SrcIP.String(), ip6.DstIP.String(), length)
+				}
 			}
 			return fmt.Sprintf("IP6 %s > %s: %s, length %d", ip6.SrcIP, ip6.DstIP, ip6.NextLayerType().String(), length)
 		}
@@ -272,17 +313,37 @@ func formatPacket(payload []byte, isIPv6 bool) string {
 		if ip4Layer := packet.Layer(layers.LayerTypeIPv4); ip4Layer != nil {
 			ip4, _ := ip4Layer.(*layers.IPv4)
 			length := int(ip4.Length) - int(ip4.IHL)*4
-			if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-				udp, _ := udpLayer.(*layers.UDP)
-				return "IP " + formatPacketUDP(&packet, udp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
-			}
-			if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-				tcp, _ := tcpLayer.(*layers.TCP)
-				return "IP " + formatPacketTCP(tcp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
-			}
-			if icmpLayer := packet.Layer(layers.LayerTypeICMPv4); icmpLayer != nil {
-				icmp, _ := icmpLayer.(*layers.ICMPv4)
-				return "IP " + formatPacketICMPv4(icmp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+			switch ip4.NextLayerType() {
+			case layers.LayerTypeUDP:
+				if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+					udp, _ := udpLayer.(*layers.UDP)
+					return "IP " + formatPacketUDP(&packet, udp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+				}
+			case layers.LayerTypeTCP:
+				if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
+					tcp, _ := tcpLayer.(*layers.TCP)
+					return "IP " + formatPacketTCP(tcp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+				}
+			case layers.LayerTypeICMPv4:
+				if icmpLayer := packet.Layer(layers.LayerTypeICMPv4); icmpLayer != nil {
+					icmp, _ := icmpLayer.(*layers.ICMPv4)
+					return "IP " + formatPacketICMPv4(icmp, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+				}
+			case layers.LayerTypeOSPF:
+				if ospfLayer := packet.Layer(layers.LayerTypeOSPF); ospfLayer != nil {
+					ospf, _ := ospfLayer.(*layers.OSPFv2)
+					if ospf.AuType == 2 {
+						length = length - 16
+					}
+					return "IP " + formatPacketOSPF(ospf.OSPF, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+				}
+			case layers.LayerTypeGRE:
+				if greLayer := packet.Layer(layers.LayerTypeGRE); greLayer != nil {
+					gre, _ := greLayer.(*layers.GRE)
+					return "IP " + formatPacketGRE(gre, ip4.SrcIP.String(), ip4.DstIP.String(), length)
+				}
+			case layers.LayerTypeIPv6:
+				return fmt.Sprintf("IP %s > %s: %s", ip4.SrcIP, ip4.DstIP, formatPacket(ip4.LayerPayload(), true))
 			}
 			return fmt.Sprintf("IP %s > %s: %s, length %d", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType().String(), length)
 		}
