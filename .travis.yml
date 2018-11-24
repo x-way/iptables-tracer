@@ -8,7 +8,7 @@ go:
   - master
 
 before_install:
-  - sudo apt-get install libpcap-dev tcpdump
+  - sudo apt-get install tcpdump
 
 install:
   - go get golang.org/x/lint/golint
