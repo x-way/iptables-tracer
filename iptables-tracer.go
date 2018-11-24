@@ -165,10 +165,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	select {
 	// block until context expires
-	case <-ctx.Done():
-	}
+	<-ctx.Done()
 }
 
 func getIfaceName(data []byte) string {
@@ -176,7 +174,10 @@ func getIfaceName(data []byte) string {
 	var err error
 	reader := bytes.NewReader(data)
 	var index uint32
-	binary.Read(reader, binary.BigEndian, &index)
+	err = binary.Read(reader, binary.BigEndian, &index)
+	if err != nil {
+		return ""
+	}
 	if iface, err = net.InterfaceByIndex(int(index)); err != nil {
 		return ""
 	}
@@ -203,7 +204,9 @@ func writeToCommand(cmd *exec.Cmd, lines []string) error {
 		return err
 	}
 	for _, line := range lines {
-		io.WriteString(cmdWriter, line+"\n")
+		if _, err := io.WriteString(cmdWriter, line+"\n"); err != nil {
+			log.Fatal(err)
+		}
 	}
 	cmdWriter.Close()
 	return cmd.Wait()
