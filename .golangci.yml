@@ -1,0 +1,3 @@
+service:
+  prepare:
+    - sudo apt-get install libpcap-dev tcpdump
