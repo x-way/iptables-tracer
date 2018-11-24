@@ -7,6 +7,9 @@ go:
   - "1.11.x"
   - master
 
+before_install:
+  - sudo apt-get install libpcap-dev tcpdump
+
 install:
   - go get golang.org/x/lint/golint
   - go get github.com/mattn/goveralls
