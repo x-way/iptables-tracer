@@ -3,13 +3,14 @@ package main
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/pcapgo"
 )
 
 func getTcpdumpOutput(filename string) string {
@@ -21,11 +22,12 @@ func getTcpdumpOutput(filename string) string {
 }
 
 func getFormatPacketOutput(filename string) string {
-	handle, err := pcap.OpenOffline(filename)
+	f, _ := os.Open(filename)
+	defer f.Close()
+	handle, err := pcapgo.NewReader(f)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer handle.Close()
 	out := ""
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
