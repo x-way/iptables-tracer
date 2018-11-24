@@ -1,3 +1,6 @@
 service:
   prepare:
     - sudo apt-get install libpcap-dev tcpdump
+    - go get golang.org/x/lint/golint
+    - go get github.com/mattn/goveralls
+    - go get -d ./...
