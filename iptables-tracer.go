@@ -234,28 +234,13 @@ func readFromCommand(cmd *exec.Cmd) ([]string, error) {
 
 func cleanupIptables(cleanupID int) {
 	var err error
-
 	var lines []string
-	var newIptablesConfig []string
 
 	if lines, err = readFromCommand(exec.Command(saveCommand)); err != nil {
 		log.Fatal(err)
 	}
-	iptrRe := regexp.MustCompile(`\s+--nflog-prefix\s+"iptr:(\d+):\d+"`)
-	limitRe := regexp.MustCompile(`\s+--comment\s+"iptr:(\d+):limit"`)
-	for _, line := range lines {
-		if res := iptrRe.FindStringSubmatch(line); res != nil {
-			if id, _ := strconv.Atoi(res[1]); id == cleanupID || cleanupID == 0 {
-				continue
-			}
-		}
-		if res := limitRe.FindStringSubmatch(line); res != nil {
-			if id, _ := strconv.Atoi(res[1]); id == cleanupID || cleanupID == 0 {
-				continue
-			}
-		}
-		newIptablesConfig = append(newIptablesConfig, line)
-	}
+
+	newIptablesConfig := clearIptablesPolicy(lines, cleanupID)
 
 	if err = writeToCommand(exec.Command(restoreCommand, "-t"), newIptablesConfig); err != nil {
 		log.Fatal(err)
