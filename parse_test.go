@@ -210,3 +210,33 @@ func TestClearIptablesPolicy(t *testing.T) {
 		}
 	}
 }
+
+func TestExtendIptablesPolicy(t *testing.T) {
+	tables := []struct {
+		policy            []string
+		traceID           int
+		traceFilter       string
+		fwMark            int
+		packetLimit       int
+		traceRules        bool
+		nflogGroup        int
+		expectedPolicy    []string
+		expectedRuleMap   map[int]iptablesRule
+		expectedMaxLength int
+	}{
+		{nil, 0, "", 0, 0, false, 22, nil, map[int]iptablesRule{}, 0},
+	}
+
+	for _, table := range tables {
+		gotPolicy, gotRuleMap, gotMaxLength := extendIptablesPolicy(table.policy, table.traceID, table.traceFilter, table.fwMark, table.packetLimit, table.traceRules, table.nflogGroup)
+		if !cmp.Equal(gotPolicy, table.expectedPolicy) {
+			t.Errorf("clearIptablesPolicy returned policy was incorrect, got: '%s', expected: '%s'", gotPolicy, table.expectedPolicy)
+		}
+		if !cmp.Equal(gotRuleMap, table.expectedRuleMap) {
+			t.Errorf("clearIptablesPolicy returned rule map was incorrect, got: '%v', expected: '%v'", gotRuleMap, table.expectedRuleMap)
+		}
+		if gotMaxLength != table.expectedMaxLength {
+			t.Errorf("clearIptablesPolicy returned max length was incorrect, got: '%d', expected: '%d'", gotMaxLength, table.expectedMaxLength)
+		}
+	}
+}
