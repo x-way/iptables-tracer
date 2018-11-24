@@ -88,16 +88,15 @@ func TestFormatPacketUDP(t *testing.T) {
 		udp      *layers.UDP
 		src      string
 		dst      string
-		length   int
 		expected string
 	}{
-		{nil, &layers.UDP{Length: 1234}, "test-src", "test-dst", 1234, "test-src.0 > test-dst.0: UDP, length 1226"},
-		{nil, &layers.UDP{Length: 1234, SrcPort: 68, DstPort: 67}, "test-src", "test-dst", 1234, "test-src.68 > test-dst.67: UDP, length 1226"},
-		{&pkt, &layers.UDP{Length: 46, SrcPort: 61187, DstPort: 53}, "test-src", "test-dst", 1234, "test-src.61187 > test-dst.53: 10628+ [1au] A CH? sigint.ch. (38)"},
+		{nil, &layers.UDP{Length: 1234}, "test-src", "test-dst", "test-src.0 > test-dst.0: UDP, length 1226"},
+		{nil, &layers.UDP{Length: 1234, SrcPort: 68, DstPort: 67}, "test-src", "test-dst", "test-src.68 > test-dst.67: UDP, length 1226"},
+		{&pkt, &layers.UDP{Length: 46, SrcPort: 61187, DstPort: 53}, "test-src", "test-dst", "test-src.61187 > test-dst.53: 10628+ [1au] A CH? sigint.ch. (38)"},
 	}
 
 	for _, table := range tables {
-		got := formatPacketUDP(table.packet, table.udp, table.src, table.dst, table.length)
+		got := formatPacketUDP(table.packet, table.udp, table.src, table.dst)
 		if got != table.expected {
 			t.Errorf("formatPacketUDP was incorrect, got: '%s', expected: '%s'.", got, table.expected)
 		}
