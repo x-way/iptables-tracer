@@ -46,7 +46,7 @@ func TestFormatPacketPCAP(t *testing.T) {
 		log.Fatal(err)
 	}
 	for _, f := range files {
-		if filepath.Ext(f.Name()) == "pcap" {
+		if filepath.Ext(f.Name()) == ".pcap" {
 			expected := getTcpdumpOutput("./tests/" + f.Name())
 			got := getFormatPacketOutput("./tests/" + f.Name())
 			if got != expected {
