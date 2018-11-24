@@ -55,9 +55,6 @@ func main() {
 
 	var err error
 
-	ruleMap := make(map[int]iptablesRule)
-	chainMap := make(map[string][]string)
-
 	if *traceID == 0 {
 		*traceID = os.Getpid()
 	}
@@ -67,73 +64,14 @@ func main() {
 		return
 	}
 
-	chainRe := regexp.MustCompile(`^:(\S+)`)
-	tableRe := regexp.MustCompile(`^\*(\S+)`)
-	ruleRe := regexp.MustCompile(`^-[AI]\s+(\S+)\s+(.*)$`)
-	commitRe := regexp.MustCompile(`^COMMIT`)
-
-	var newIptablesConfig []string
-	var lines []string
-
-	if lines, err = readFromCommand(exec.Command(saveCommand)); err != nil {
-		log.Fatal(err)
-	}
-
-	markFilter := ""
-	if *fwMark != 0 {
-		markFilter = fmt.Sprintf("-m mark --mark 0x%x/0x%x", *fwMark, *fwMark)
-
-	}
 	if *packetLimit != 0 && *fwMark == 0 {
 		log.Fatal("Error: limit requires fwmark")
 	}
 
-	table := ""
-	ruleIndex := 0
-	maxLength := 0
-	for _, line := range lines {
-		if res := chainRe.FindStringSubmatch(line); res != nil {
-			if table == "" {
-				log.Fatal("Error: found chain definition before initial table definition")
-			}
-			chainMap[table] = append(chainMap[table], res[1])
-			if len(res[1]) > maxLength {
-				maxLength = len(res[1])
-			}
-		}
-		if res := commitRe.FindStringSubmatch(line); res != nil {
-			// we are at the end of a table, add aritificial rules for all chains in this table
-			for _, chain := range chainMap[table] {
-				ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: chain, ChainEntry: true}
-				traceRule := fmt.Sprintf("-I %s %s %s -j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", chain, *traceFilter, markFilter, *traceID, ruleIndex, *nflogGroup)
-				ruleIndex++
-				newIptablesConfig = append(newIptablesConfig, traceRule)
-				if table == "raw" && chain == "PREROUTING" && *packetLimit != 0 {
-					newIptablesConfig = append(newIptablesConfig, fmt.Sprintf("-I %s %s -m comment --comment \"iptr:%d:limit\" -m limit --limit %d/minute --limit-burst 1 -j MARK --set-xmark 0x%x/0x%x", chain, *traceFilter, *traceID, *packetLimit, *fwMark, *fwMark))
-				}
-			}
-		}
-		if res := tableRe.FindStringSubmatch(line); res != nil {
-			table = res[1]
-		}
-		if res := ruleRe.FindStringSubmatch(line); res != nil && *traceRules {
-			if table == "" {
-				log.Fatal("Error: found rule definition before initial table definition")
-			}
-			ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: res[1], Rule: res[2]}
-			traceRule := fmt.Sprintf("-A %s %s %s -j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", res[1], *traceFilter, markFilter, *traceID, ruleIndex, *nflogGroup)
-			ruleIndex++
-			newIptablesConfig = append(newIptablesConfig, traceRule)
-		}
-		newIptablesConfig = append(newIptablesConfig, line)
-	}
+	lines := iptablesSave()
+	newIptablesConfig, ruleMap, maxLength := extendIptablesPolicy(lines, *traceID, *traceFilter, *fwMark, *packetLimit, *traceRules, *nflogGroup)
+	iptablesRestore(newIptablesConfig)
 
-	if err = writeToCommand(exec.Command(restoreCommand, "-t"), newIptablesConfig); err != nil {
-		log.Fatal(err)
-	}
-	if err = writeToCommand(exec.Command(restoreCommand), newIptablesConfig); err != nil {
-		log.Fatal(err)
-	}
 	defer cleanupIptables(*traceID)
 
 	var nf *nflog.Nflog
@@ -235,7 +173,7 @@ func readFromCommand(cmd *exec.Cmd) ([]string, error) {
 	return lines, nil
 }
 
-func cleanupIptables(cleanupID int) {
+func iptablesSave() []string {
 	var err error
 	var lines []string
 
@@ -243,12 +181,18 @@ func cleanupIptables(cleanupID int) {
 		log.Fatal(err)
 	}
 
-	newIptablesConfig := clearIptablesPolicy(lines, cleanupID)
+	return lines
+}
 
-	if err = writeToCommand(exec.Command(restoreCommand, "-t"), newIptablesConfig); err != nil {
+func iptablesRestore(policy []string) {
+	if err := writeToCommand(exec.Command(restoreCommand, "-t"), policy); err != nil {
 		log.Fatal(err)
 	}
-	if err = writeToCommand(exec.Command(restoreCommand), newIptablesConfig); err != nil {
+	if err := writeToCommand(exec.Command(restoreCommand), policy); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func cleanupIptables(cleanupID int) {
+	iptablesRestore(clearIptablesPolicy(iptablesSave(), cleanupID))
 }
