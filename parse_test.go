@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
 )
 
 var testPolicyNoTrace = []string{
@@ -157,8 +157,8 @@ func TestClearIptablesPolicy(t *testing.T) {
 
 	for _, policy := range policies {
 		got := clearIptablesPolicy(policy.policy, policy.cleanupID)
-		if diff := deep.Equal(got, policy.expected); diff != nil {
-			t.Errorf("clearIptablesPolicy was incorrect, got: '%s', expected: '%s'. %v", got, policy.expected, diff)
+		if !cmp.Equal(got, policy.expected) {
+			t.Errorf("clearIptablesPolicy was incorrect, got: '%s', expected: '%s'", got, policy.expected)
 		}
 	}
 }
