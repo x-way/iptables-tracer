@@ -20,3 +20,7 @@ script:
   - golint -set_exit_status ./...
   - go test -v ./...
   - $GOPATH/bin/goveralls -service=travis-ci
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
