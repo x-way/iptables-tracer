@@ -5,7 +5,11 @@ os: linux
 go:
   - "1.10.x"
   - "1.11.x"
-  - master
+
+matrix:
+  include:
+    - go: master
+      if: branch = master
 
 before_install:
   - sudo apt-get install tcpdump
