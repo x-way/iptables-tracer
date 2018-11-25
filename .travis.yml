@@ -9,7 +9,7 @@ go:
 matrix:
   include:
     - go: master
-      if: branch = master
+      if: branch = master AND type = cron
 
 before_install:
   - sudo apt-get install tcpdump
