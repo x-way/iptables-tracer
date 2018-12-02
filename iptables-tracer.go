@@ -75,7 +75,7 @@ func main() {
 	defer cleanupIptables(*traceID)
 
 	var nf *nflog.Nflog
-	nf, err = nflog.Open()
+	nf, err = nflog.Open(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
