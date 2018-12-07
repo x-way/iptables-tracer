@@ -305,6 +305,8 @@ func formatPacket(payload []byte, isIPv6 bool) string {
 					gre, _ := greLayer.(*layers.GRE)
 					return "IP6 " + formatPacketGRE(gre, ip6.SrcIP.String(), ip6.DstIP.String(), length)
 				}
+			case layers.LayerTypeIPv4:
+				return fmt.Sprintf("IP6 %s > %s: %s", ip6.SrcIP, ip6.DstIP, formatPacket(ip6.LayerPayload(), false))
 			}
 			return fmt.Sprintf("IP6 %s > %s: %s, length %d", ip6.SrcIP, ip6.DstIP, ip6.NextLayerType().String(), length)
 		}
