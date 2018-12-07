@@ -271,8 +271,88 @@ func formatPacketOSPF(ospf layers.OSPF, src, dst string, length int) string {
 }
 
 func formatPacketGRE(gre *layers.GRE, src, dst string, length int) string {
-	return fmt.Sprintf("%s > %s: GREv%d, length %d: %s", src, dst, gre.Version, length, formatPacket(gre.LayerPayload(), false))
+	out := fmt.Sprintf("%s > %s: GREv%d", src, dst, gre.Version)
+	switch gre.Version {
+	case 0:
+		if gre.ChecksumPresent || gre.RoutingPresent {
+			out = out + fmt.Sprintf(", off 0x%x", gre.Offset)
+		}
+		if gre.KeyPresent {
+			out = out + fmt.Sprintf(", key=0x%x", gre.Key)
+		}
+		if gre.SeqPresent {
+			out = out + fmt.Sprintf(", seq %d", gre.Seq)
+		}
+		if gre.RoutingPresent {
+			sre := gre.GRERouting
+			for sre != nil {
+				switch sre.AddressFamily {
+				//				case 0x0800:
+				//					out = out + fmt.Sprintf(", (rtaf=ip%s)")
+				//				case 0xfffe:
+				//					out = out + fmt.Sprintf(", (rtaf=asn%s)")
+				default:
+					out = out + fmt.Sprintf(", (rtaf=0x%x)", sre.AddressFamily)
+				}
+
+				sre = sre.Next
+			}
+		}
+		out = out + fmt.Sprintf(", length %d: ", length)
+		switch gre.Protocol {
+		case layers.EthernetTypeIPv4:
+			out = out + formatPacket(gre.LayerPayload(), false)
+		case layers.EthernetTypeIPv6:
+			out = out + formatPacket(gre.LayerPayload(), true)
+		default:
+			out = out + fmt.Sprintf("gre-proto-0x%x", gre.Protocol&0xffff)
+		}
+	case 1:
+		if gre.KeyPresent {
+			out = out + fmt.Sprintf(", call %d", gre.Key&0xffff)
+		}
+		if gre.SeqPresent {
+			out = out + fmt.Sprintf(", seq %d", gre.Seq)
+		}
+		if gre.AckPresent {
+			out = out + fmt.Sprintf(", ack %d", gre.Ack)
+		}
+		if !gre.SeqPresent {
+			out = out + ", no-payload"
+		}
+		out = out + fmt.Sprintf(", length %d: ", length)
+		if gre.SeqPresent {
+			switch gre.Protocol {
+			case layers.EthernetTypePPP:
+				if pppLayer := gopacket.NewPacket(gre.LayerPayload(), layers.LayerTypePPP, gopacket.Default).Layer(layers.LayerTypePPP); pppLayer != nil {
+					ppp, _ := pppLayer.(*layers.PPP)
+					out = out + formatPacketPPP(ppp)
+				}
+			default:
+				out = out + fmt.Sprintf("gre-proto-0x%x", gre.Protocol&0xffff)
+			}
+		}
+	default:
+		out = out + " ERROR: unknown-version"
+	}
+	return out
 }
+
+func formatPacketPPP(ppp *layers.PPP) string {
+	switch ppp.PPPType {
+	case layers.PPPTypeIPv4:
+		return formatPacket(ppp.LayerPayload(), false)
+	case layers.PPPTypeIPv6:
+		return formatPacket(ppp.LayerPayload(), true)
+	case layers.PPPTypeMPLSUnicast:
+		return fmt.Sprintf("MPLS, length %d", len(ppp.LayerPayload()))
+	case layers.PPPTypeMPLSMulticast:
+		return fmt.Sprintf("MPLS, length %d", len(ppp.LayerPayload()))
+	default:
+		return fmt.Sprintf("unknown PPP protocol (0x%x)", ppp.PPPType)
+	}
+}
+
 func formatPacket(payload []byte, isIPv6 bool) string {
 	if isIPv6 {
 		packet := gopacket.NewPacket(payload, layers.LayerTypeIPv6, gopacket.Default)
