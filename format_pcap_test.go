@@ -31,10 +31,15 @@ func getFormatPacketOutput(filename string) string {
 	out := ""
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
-		if ip4 := packet.Layer(layers.LayerTypeIPv4); ip4 != nil {
-			out = out + formatPacket(append(ip4.LayerContents(), ip4.LayerPayload()...), false) + "\n"
-		} else if ip6 := packet.Layer(layers.LayerTypeIPv6); ip6 != nil {
-			out = out + formatPacket(append(ip6.LayerContents(), ip6.LayerPayload()...), true) + "\n"
+		if net := packet.NetworkLayer(); net != nil {
+			switch net.LayerType() {
+			case layers.LayerTypeIPv4:
+				out = out + formatPacket(append(net.LayerContents(), net.LayerPayload()...), false) + "\n"
+			case layers.LayerTypeIPv6:
+				out = out + formatPacket(append(net.LayerContents(), net.LayerPayload()...), true) + "\n"
+			default:
+				log.Fatal("Non-IP packet found in " + filename)
+			}
 		} else {
 			log.Fatal("Non-IP packet found in " + filename)
 		}
