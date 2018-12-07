@@ -14,7 +14,7 @@ matrix:
 env:
   global:
   - LATEST_TCPDUMP=true
-  - PATH=$PATH:/tmp/bin
+  - PATH=/tmp/sbin:$PATH
 
 addons:
   apt:
