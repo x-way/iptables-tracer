@@ -264,7 +264,7 @@ func formatPacketOSPF(ospf layers.OSPF, src, dst string, length int) string {
 		if ospf.Version == 3 {
 			ospfType = fmt.Sprintf("unknown packet type (%d)", ospf.Type)
 		} else {
-			ospfType = fmt.Sprintf("unknown LS-type")
+			ospfType = fmt.Sprintf("unknown LS-type %d", ospf.Type)
 		}
 	}
 	return fmt.Sprintf("%s > %s: OSPFv%d, %s, length %d", src, dst, ospf.Version, ospfType, length)
