@@ -40,7 +40,23 @@ func formatPacketTCP(tcp *layers.TCP, src, dst string, length int) string {
 	if flags == "" {
 		flags = "none"
 	}
-	return fmt.Sprintf("%s.%d > %s.%d: Flags [%s], seq %d, win %d, length %d", src, tcp.SrcPort, dst, tcp.DstPort, flags, tcp.Seq, tcp.Window, length)
+	out := fmt.Sprintf("%s.%d > %s.%d: Flags [%s]", src, tcp.SrcPort, dst, tcp.DstPort, flags)
+	if length > 0 || tcp.SYN || tcp.FIN || tcp.RST {
+		if length > 0 {
+			out += fmt.Sprintf(", seq %d:%d", tcp.Seq, int(tcp.Seq)+length)
+		} else {
+			out += fmt.Sprintf(", seq %d", tcp.Seq)
+		}
+	}
+	if tcp.ACK {
+		out += fmt.Sprintf(", ack %d", tcp.Ack)
+	}
+	out += fmt.Sprintf(", win %d", tcp.Window)
+	if tcp.URG {
+		out += fmt.Sprintf(", urg %d", tcp.Urgent)
+	}
+	out += fmt.Sprintf(", length %d", length)
+	return out
 }
 
 func formatPacketICMPv6(packet *gopacket.Packet, icmp *layers.ICMPv6, src, dst string, length int) string {
