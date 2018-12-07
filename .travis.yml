@@ -11,8 +11,29 @@ matrix:
     - go: master
       if: branch = master AND type = cron
 
-before_install:
-  - sudo apt-get install tcpdump
+env:
+  global:
+  - LATEST_TCPDUMP=true
+  - PATH=$PATH:/tmp/bin
+
+addons:
+  apt:
+    packages:
+      - libusb-1.0-0-dev
+      - libdbus-glib-1-dev
+      - libbluetooth-dev
+      - libnl-genl-3-dev
+      - libibverbs-dev
+      - libssl-dev
+      - libssl0.9.8
+      - libssl1.0.0
+      - libdnet-dev
+      - libsmi2-dev
+      - libcap-ng-dev
+      - libpcap-dev
+
+before_script:
+  - if [ "$LATEST_TCPDUMP" = true ]; then (cd .. && git clone --depth 3 --branch=master --quiet git://github.com/the-tcpdump-group/tcpdump.git && cd tcpdump && ./configure --prefix=/tmp && make && make install); fi
 
 install:
   - go get golang.org/x/lint/golint
