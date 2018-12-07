@@ -19,8 +19,8 @@ func TestFormatPacketICMPv6(t *testing.T) {
 		expected string
 	}{
 		{nil, &layers.ICMPv6{}, "test-src", "test-dst", 1234, "test-src > test-dst: ICMP6, length 1234"},
-		{&reqPkt, &layers.ICMPv6{TypeCode: layers.ICMPv6TypeEchoRequest<<8}, "test-src", "test-dst", 1234, "test-src > test-dst: ICMP6 echo request, id 45697, seq 0, length 1234"},
-		{&repPkt, &layers.ICMPv6{TypeCode: layers.ICMPv6TypeEchoReply<<8}, "test-src", "test-dst", 1234, "test-src > test-dst: ICMP6 echo reply, id 45697, seq 0, length 1234"},
+		{&reqPkt, &layers.ICMPv6{TypeCode: layers.ICMPv6TypeEchoRequest<<8}, "test-src", "test-dst", 1234, "test-src > test-dst: ICMP6, echo request, id 45697, seq 0, length 1234"},
+		{&repPkt, &layers.ICMPv6{TypeCode: layers.ICMPv6TypeEchoReply<<8}, "test-src", "test-dst", 1234, "test-src > test-dst: ICMP6, echo reply, id 45697, seq 0, length 1234"},
 	}
 
 	for _, table := range tables {

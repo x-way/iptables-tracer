@@ -48,15 +48,15 @@ func formatPacketICMPv6(packet *gopacket.Packet, icmp *layers.ICMPv6, src, dst s
 	case layers.ICMPv6TypeEchoRequest:
 		if echoLayer := (*packet).Layer(layers.LayerTypeICMPv6Echo); echoLayer != nil {
 			echo, _ := echoLayer.(*layers.ICMPv6Echo)
-			return fmt.Sprintf("%s > %s: ICMP6 echo request, id %d, seq %d, length %d", src, dst, echo.Identifier, echo.SeqNumber, length)
+			return fmt.Sprintf("%s > %s: ICMP6, echo request, id %d, seq %d, length %d", src, dst, echo.Identifier, echo.SeqNumber, length)
 		}
-		return fmt.Sprintf("%s > %s: ICMP6 echo request, length %d", src, dst, length)
+		return fmt.Sprintf("%s > %s: ICMP6, echo request, length %d", src, dst, length)
 	case layers.ICMPv6TypeEchoReply:
 		if echoLayer := (*packet).Layer(layers.LayerTypeICMPv6Echo); echoLayer != nil {
 			echo, _ := echoLayer.(*layers.ICMPv6Echo)
-			return fmt.Sprintf("%s > %s: ICMP6 echo reply, id %d, seq %d, length %d", src, dst, echo.Identifier, echo.SeqNumber, length)
+			return fmt.Sprintf("%s > %s: ICMP6, echo reply, id %d, seq %d, length %d", src, dst, echo.Identifier, echo.SeqNumber, length)
 		}
-		return fmt.Sprintf("%s > %s: ICMP6 echo reply, length %d", src, dst, length)
+		return fmt.Sprintf("%s > %s: ICMP6, echo reply, length %d", src, dst, length)
 	default:
 		return fmt.Sprintf("%s > %s: ICMP6, length %d", src, dst, length)
 	}
