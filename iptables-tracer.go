@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"context"
-	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
@@ -88,13 +86,13 @@ func main() {
 	defer cancel()
 
 	callback := func(m nflog.Msg) int {
-		prefix := string(m[nflog.AttrPrefix])
+		prefix := m[nflog.AttrPrefix].(string)
 		prefixRe := regexp.MustCompile(`^iptr:(\d+):(\d+)`)
 		if res := prefixRe.FindStringSubmatch(prefix); res != nil {
 			if id, _ := strconv.Atoi(res[1]); id == *traceID {
 				ruleID, _ := strconv.Atoi(res[2])
 				if myRule, ok := ruleMap[ruleID]; ok {
-					printRule(maxLength, time.Now(), myRule, m[nflog.AttrMark], getIfaceName(m[nflog.AttrIfindexIndev]), getIfaceName(m[nflog.AttrIfindexOutdev]), m[nflog.AttrPayload])
+					printRule(maxLength, time.Now(), myRule, m[nflog.AttrMark].([]byte), getIfaceName(m[nflog.AttrIfindexIndev].(uint32)), getIfaceName(m[nflog.AttrIfindexOutdev].(uint32)), m[nflog.AttrPayload].([]byte))
 				}
 			}
 		}
@@ -110,15 +108,9 @@ func main() {
 	<-ctx.Done()
 }
 
-func getIfaceName(data []byte) string {
+func getIfaceName(index uint32) string {
 	var iface *net.Interface
 	var err error
-	reader := bytes.NewReader(data)
-	var index uint32
-	err = binary.Read(reader, binary.BigEndian, &index)
-	if err != nil {
-		return ""
-	}
 	if iface, err = net.InterfaceByIndex(int(index)); err != nil {
 		return ""
 	}
