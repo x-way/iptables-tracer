@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/florianl/go-nflog"
-	"golang.org/x/sys/unix"
 )
 
 type iptablesRule struct {
@@ -75,7 +74,11 @@ func main() {
 	defer cleanupIptables(*traceID)
 
 	var nf *nflog.Nflog
-	nf, err = nflog.Open(nil)
+	config := nflog.Config{
+		Group:    uint16(*nflogGroup),
+		Copymode: nflog.NfUlnlCopyPacket,
+	}
+	nf, err = nflog.Open(&config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,20 +88,20 @@ func main() {
 	defer cancel()
 
 	callback := func(m nflog.Msg) int {
-		prefix := string(m[nflog.NfUlaAttrPrefix])
+		prefix := string(m[nflog.AttrPrefix])
 		prefixRe := regexp.MustCompile(`^iptr:(\d+):(\d+)`)
 		if res := prefixRe.FindStringSubmatch(prefix); res != nil {
 			if id, _ := strconv.Atoi(res[1]); id == *traceID {
 				ruleID, _ := strconv.Atoi(res[2])
 				if myRule, ok := ruleMap[ruleID]; ok {
-					printRule(maxLength, time.Now(), myRule, m[nflog.NfUlaAttrMark], getIfaceName(m[nflog.NfUlaAttrIfindexIndev]), getIfaceName(m[nflog.NfUlaAttrIfindexOutdev]), m[nflog.NfUlaAttrPayload])
+					printRule(maxLength, time.Now(), myRule, m[nflog.AttrMark], getIfaceName(m[nflog.AttrIfindexIndev]), getIfaceName(m[nflog.AttrIfindexOutdev]), m[nflog.AttrPayload])
 				}
 			}
 		}
 		return 0
 	}
 
-	err = nf.Register(ctx, unix.AF_INET, *nflogGroup, nflog.NfUlnlCopyPacket, callback)
+	err = nf.Register(ctx, callback)
 	if err != nil {
 		log.Fatal(err)
 	}
