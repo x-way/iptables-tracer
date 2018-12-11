@@ -1,5 +1,8 @@
 # iptables-tracer
-[![Build Status](https://travis-ci.org/x-way/iptables-tracer.svg?branch=master)](http://travis-ci.org/x-way/iptables-tracer) [![Coverage Status](https://coveralls.io/repos/github/x-way/iptables-tracer/badge.svg?branch=master)](https://coveralls.io/github/x-way/iptables-tracer?branch=master)
+[![Build Status](https://travis-ci.org/x-way/iptables-tracer.svg?branch=master)](http://travis-ci.org/x-way/iptables-tracer)
+[![Go Report Card](https://goreportcard.com/badge/github.com/x-way/iptables-tracer)](https://goreportcard.com/report/github.com/x-way/iptables-tracer)
+[![Coverage Status](https://coveralls.io/repos/github/x-way/iptables-tracer/badge.svg?branch=master)](https://coveralls.io/github/x-way/iptables-tracer?branch=master)
+[![Codecov](https://codecov.io/gh/x-way/iptables-tracer/branch/master/graph/badge.svg)](https://codecov.io/gh/x-way/iptables-tracer/)
 
 Insert trace-points into the running configuration to observe the path of packets through the iptables chains.
 
