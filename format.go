@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 
 	"github.com/google/gopacket"
@@ -54,6 +55,40 @@ func formatPacketTCP(tcp *layers.TCP, src, dst string, length int) string {
 	out += fmt.Sprintf(", win %d", tcp.Window)
 	if tcp.URG {
 		out += fmt.Sprintf(", urg %d", tcp.Urgent)
+	}
+	if len(tcp.Options) > 0 {
+		out += ", options ["
+		for i, opt := range tcp.Options {
+			if i > 0 {
+				out += ","
+			}
+			switch opt.OptionType {
+			case layers.TCPOptionKindMSS:
+				out += fmt.Sprintf("mss %d", binary.BigEndian.Uint16(opt.OptionData))
+			case layers.TCPOptionKindNop:
+				out += "nop"
+			case layers.TCPOptionKindEndList:
+				out += "eol"
+			case layers.TCPOptionKindWindowScale:
+				out += fmt.Sprintf("wscale %d", opt.OptionData[0])
+			case layers.TCPOptionKindSACKPermitted:
+				out += "sackOK"
+			case layers.TCPOptionKindTimestamps:
+				out += fmt.Sprintf("TS val %d ecr %d", binary.BigEndian.Uint32(opt.OptionData[:4]), binary.BigEndian.Uint32(opt.OptionData[4:8]))
+			default:
+				out += fmt.Sprintf("unknown-%d", opt.OptionType)
+				if len(opt.OptionData) > 0 {
+					out += " 0x"
+					for _, v := range opt.OptionData {
+						out += fmt.Sprintf("%02x", v)
+					}
+				}
+			}
+			if opt.OptionType == layers.TCPOptionKindEndList {
+				break
+			}
+		}
+		out += "]"
 	}
 	out += fmt.Sprintf(", length %d", length)
 	return out
