@@ -92,7 +92,21 @@ func main() {
 			if id, _ := strconv.Atoi(res[1]); id == *traceID {
 				ruleID, _ := strconv.Atoi(res[2])
 				if myRule, ok := ruleMap[ruleID]; ok {
-					printRule(maxLength, time.Now(), myRule, m[nflog.AttrMark].([]byte), getIfaceName(m[nflog.AttrIfindexIndev].(uint32)), getIfaceName(m[nflog.AttrIfindexOutdev].(uint32)), m[nflog.AttrPayload].([]byte))
+					var fwMark []byte
+					var iif string
+					var oif string
+					if mark, found := m[nflog.AttrMark]; found {
+						fwMark = mark.([]byte)
+					}
+					if iifIx, found := m[nflog.AttrIfindexIndev]; found {
+						iif = getIfaceName(iifIx.(uint32))
+					}
+					if oifIx, found := m[nflog.AttrIfindexOutdev]; found {
+						oif = getIfaceName(oifIx.(uint32))
+					}
+					if payload, found := m[nflog.AttrPayload]; found {
+						printRule(maxLength, time.Now(), myRule, fwMark, iif, oif, payload.([]byte))
+					}
 				}
 			}
 		}
