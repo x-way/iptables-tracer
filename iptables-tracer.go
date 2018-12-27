@@ -24,8 +24,18 @@ type iptablesRule struct {
 	ChainEntry bool
 }
 
+type msg struct {
+	Time    time.Time
+	Rule    iptablesRule
+	Mark    []byte
+	Iif     string
+	Oif     string
+	Payload []byte
+}
+
 var (
 	traceDuration  = flag.Duration("t", 10*time.Second, "how long to run the iptables-tracer")
+	packetGap      = flag.Duration("g", 10*time.Millisecond, "output empty line when two loglines are separated by at least this duration")
 	nflogGroup     = flag.Int("n", 22, "NFLOG group number to use")
 	traceFilter    = flag.String("f", "-p udp --dport 53", "trace filter (iptables match syntax)")
 	traceID        = flag.Int("i", 0, "trace id (0 = use PID)")
@@ -85,6 +95,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), *traceDuration)
 	defer cancel()
 
+	msgChannel := make(chan msg)
+
 	callback := func(m nflog.Msg) int {
 		prefix := m[nflog.AttrPrefix].(string)
 		prefixRe := regexp.MustCompile(`^iptr:(\d+):(\d+)`)
@@ -105,13 +117,31 @@ func main() {
 						oif = getIfaceName(oifIx.(uint32))
 					}
 					if payload, found := m[nflog.AttrPayload]; found {
-						printRule(maxLength, time.Now(), myRule, fwMark, iif, oif, payload.([]byte))
+						msgChannel <- msg{
+							Time:    time.Now(),
+							Rule:    myRule,
+							Mark:    fwMark,
+							Iif:     iif,
+							Oif:     oif,
+							Payload: payload.([]byte),
+						}
 					}
 				}
 			}
 		}
 		return 0
 	}
+
+	go func() {
+		var lastTime time.Time
+		for msg := range msgChannel {
+			if msg.Time.Sub(lastTime).Nanoseconds() > (*packetGap).Nanoseconds() && !lastTime.IsZero() {
+				fmt.Println("")
+			}
+			lastTime = msg.Time
+			printRule(maxLength, msg.Time, msg.Rule, msg.Mark, msg.Iif, msg.Oif, msg.Payload)
+		}
+	}()
 
 	err = nf.Register(ctx, callback)
 	if err != nil {
@@ -120,6 +150,7 @@ func main() {
 
 	// block until context expires
 	<-ctx.Done()
+	close(msgChannel)
 }
 
 func getIfaceName(index uint32) string {
