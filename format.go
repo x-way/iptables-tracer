@@ -94,6 +94,16 @@ func formatPacketTCP(tcp *layers.TCP, src, dst string, length int) string {
 	return out
 }
 
+func formatPacketSIP(sip *layers.SIP, src, dst string, srcPort, dstPort int) string {
+	sipStr := "SIP: "
+	if sip.IsResponse {
+		sipStr += fmt.Sprintf("%s %d %s", sip.Version, sip.ResponseCode, sip.ResponseStatus)
+	} else {
+		sipStr += fmt.Sprintf("%s %s %s", sip.Method, sip.RequestURI, sip.Version)
+	}
+	return fmt.Sprintf("%s.%d > %s.%d: %s", src, srcPort, dst, dstPort, sipStr)
+}
+
 func formatPacketICMPv6(packet *gopacket.Packet, icmp *layers.ICMPv6, src, dst string, length int) string {
 	switch icmpType := icmp.TypeCode.Type(); icmpType {
 	case layers.ICMPv6TypeEchoRequest:
@@ -293,6 +303,12 @@ func formatPacketUDP(packet *gopacket.Packet, udp *layers.UDP, src, dst string) 
 		if dnsLayer := (*packet).Layer(layers.LayerTypeDNS); dnsLayer != nil {
 			dns, _ := dnsLayer.(*layers.DNS)
 			return formatPacketDNS(dns, src, dst, int(udp.SrcPort), int(udp.DstPort), length)
+		}
+	}
+	if udp.DstPort == 5060 || udp.SrcPort == 5060 {
+		if sipLayer := (*packet).Layer(layers.LayerTypeSIP); sipLayer != nil {
+			sip, _ := sipLayer.(*layers.SIP)
+			return formatPacketSIP(sip, src, dst, int(udp.SrcPort), int(udp.DstPort))
 		}
 	}
 	return fmt.Sprintf("%s.%d > %s.%d: UDP, length %d", src, udp.SrcPort, dst, udp.DstPort, length)
