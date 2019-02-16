@@ -162,7 +162,7 @@ func getIfaceName(index uint32) string {
 	return iface.Name
 }
 
-func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif string, oif string, payload []byte) {
+func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte) {
 	packetStr := formatPacket(payload, *ip6tables)
 	if rule.ChainEntry {
 		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
