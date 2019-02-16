@@ -27,7 +27,7 @@ type iptablesRule struct {
 type msg struct {
 	Time    time.Time
 	Rule    iptablesRule
-	Mark    []byte
+	Mark    uint32
 	Iif     string
 	Oif     string
 	Payload []byte
@@ -104,11 +104,11 @@ func main() {
 			if id, _ := strconv.Atoi(res[1]); id == *traceID {
 				ruleID, _ := strconv.Atoi(res[2])
 				if myRule, ok := ruleMap[ruleID]; ok {
-					var fwMark []byte
+					var fwMark uint32
 					var iif string
 					var oif string
 					if mark, found := m[nflog.AttrMark]; found {
-						fwMark = mark.([]byte)
+						fwMark = mark.(uint32)
 					}
 					if iifIx, found := m[nflog.AttrIfindexIndev]; found {
 						iif = getIfaceName(iifIx.(uint32))
@@ -162,7 +162,7 @@ func getIfaceName(index uint32) string {
 	return iface.Name
 }
 
-func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark []byte, iif string, oif string, payload []byte) {
+func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte) {
 	packetStr := formatPacket(payload, *ip6tables)
 	if rule.ChainEntry {
 		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
