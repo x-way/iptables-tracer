@@ -115,7 +115,7 @@ func main() {
 					var iif string
 					var oif string
 					var ctBytes []byte
-					var ctInfo := ^uint32(0)
+					var ctInfo = ^uint32(0)
 					if mark, found := m[nflog.AttrMark]; found {
 						fwMark = mark.(uint32)
 					}
