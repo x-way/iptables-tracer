@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
@@ -14,7 +15,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/florianl/go-nflog"
+	conntrack "github.com/florianl/go-conntrack"
+	nflog "github.com/florianl/go-nflog"
 )
 
 type iptablesRule struct {
@@ -31,6 +33,8 @@ type msg struct {
 	Iif     string
 	Oif     string
 	Payload []byte
+	Ct      []byte
+	CtInfo  uint32
 }
 
 var (
@@ -44,6 +48,7 @@ var (
 	fwMark         = flag.Int("m", 0, "fwmark to use for packet tracking")
 	packetLimit    = flag.Int("l", 0, "limit of packets per minute to trace (0 = no limit)")
 	ip6tables      = flag.Bool("6", false, "use ip6tables")
+	debugConntrack = flag.Bool("x", false, "dump all conntrack information")
 	saveCommand    string
 	restoreCommand string
 )
@@ -83,8 +88,10 @@ func main() {
 
 	var nf *nflog.Nflog
 	config := nflog.Config{
-		Group:    uint16(*nflogGroup),
-		Copymode: nflog.NfUlnlCopyPacket,
+		Group:       uint16(*nflogGroup),
+		Copymode:    nflog.NfUlnlCopyPacket,
+		Flags:       nflog.NfUlnlCfgFConntrack,
+		ReadTimeout: time.Second,
 	}
 	nf, err = nflog.Open(&config)
 	if err != nil {
@@ -107,6 +114,8 @@ func main() {
 					var fwMark uint32
 					var iif string
 					var oif string
+					var ctBytes []byte
+					var ctInfo := ^uint32(0)
 					if mark, found := m[nflog.AttrMark]; found {
 						fwMark = mark.(uint32)
 					}
@@ -116,6 +125,12 @@ func main() {
 					if oifIx, found := m[nflog.AttrIfindexOutdev]; found {
 						oif = getIfaceName(oifIx.(uint32))
 					}
+					if ct, found := m[nflog.AttrCt]; found {
+						ctBytes = ct.([]byte)
+					}
+					if cti, found := m[nflog.AttrCtInfo]; found {
+						ctInfo = cti.(uint32)
+					}
 					if payload, found := m[nflog.AttrPayload]; found {
 						msgChannel <- msg{
 							Time:    time.Now(),
@@ -124,6 +139,8 @@ func main() {
 							Iif:     iif,
 							Oif:     oif,
 							Payload: payload.([]byte),
+							Ct:      ctBytes,
+							CtInfo:  ctInfo,
 						}
 					}
 				}
@@ -139,7 +156,10 @@ func main() {
 				fmt.Println("")
 			}
 			lastTime = msg.Time
-			printRule(maxLength, msg.Time, msg.Rule, msg.Mark, msg.Iif, msg.Oif, msg.Payload)
+			printRule(maxLength, msg.Time, msg.Rule, msg.Mark, msg.Iif, msg.Oif, msg.Payload, msg.Ct, msg.CtInfo)
+			if *debugConntrack && len(msg.Ct) > 0 {
+				printCt(msg.Ct)
+			}
 		}
 	}()
 
@@ -162,14 +182,48 @@ func getIfaceName(index uint32) string {
 	return iface.Name
 }
 
-func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte) {
+func getCtMark(data []byte) uint32 {
+	if conn, err := conntrack.ParseAttributes(data); err == nil {
+		if mark, found := conn[conntrack.AttrMark]; found {
+			return binary.BigEndian.Uint32(mark)
+		}
+	}
+	return 0
+}
+
+func ctInfoStr(ctinfo uint32) string {
+	switch ctinfo {
+	case 0:
+		return "EST O"
+	case 1:
+		return "REL O"
+	case 2:
+		return "NEW O"
+	case 3:
+		return "EST R"
+	case 4:
+		return "REL R"
+	case 5:
+		return "NEW R"
+	case 7:
+		return "UNTRA"
+	case ^uint32(0):
+		return "     "
+	default:
+		return fmt.Sprintf("%5d", ctinfo)
+	}
+
+}
+
+func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte, ct []byte, ctInfo uint32) {
 	packetStr := formatPacket(payload, *ip6tables)
+	ctStr := fmt.Sprintf(" %s 0x%08x", ctInfoStr(ctInfo), getCtMark(ct))
 	if rule.ChainEntry {
-		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
-		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, fwMark, packetStr, iif, oif)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x%%s %%s  [In:%%s Out:%%s]\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, fwMark, ctStr, packetStr, iif, oif)
 	} else {
-		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %%s 0x%%08x %%s  [In:%%s Out:%%s]\n", maxLength)
-		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, fwMark, packetStr, iif, oif)
+		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds %%s 0x%%08x%%s %%s  [In:%%s Out:%%s]\n", maxLength)
+		fmt.Printf(fmtStr, ts.Format("15:04:05.000000"), rule.Table, rule.Chain, rule.Rule, fwMark, ctStr, packetStr, iif, oif)
 	}
 }
 
