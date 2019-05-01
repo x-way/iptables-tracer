@@ -17,7 +17,7 @@ import (
 
 	conntrack "github.com/florianl/go-conntrack"
 	nflog "github.com/florianl/go-nflog"
-	ctprint "github.com/x-way/iptables-traces/pkg/ctprint"
+	ctprint "github.com/x-way/iptables-tracer/pkg/ctprint"
 )
 
 type iptablesRule struct {
