@@ -1,4 +1,4 @@
-package main
+package format
 
 import (
 	"testing"
@@ -177,7 +177,7 @@ func TestFormatPacket(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		got := formatPacket(table.payload, table.isIPv6)
+		got := FormatPacket(table.payload, table.isIPv6)
 		if got != table.expected {
 			t.Errorf("formatPacket was incorrect, got: '%s', expected: '%s'.", got, table.expected)
 		}

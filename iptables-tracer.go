@@ -18,6 +18,7 @@ import (
 	conntrack "github.com/florianl/go-conntrack"
 	nflog "github.com/florianl/go-nflog"
 	ctprint "github.com/x-way/iptables-tracer/pkg/ctprint"
+	format "github.com/x-way/iptables-tracer/pkg/format"
 )
 
 type iptablesRule struct {
@@ -217,7 +218,7 @@ func ctInfoStr(ctinfo uint32) string {
 }
 
 func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte, ct []byte, ctInfo uint32) {
-	packetStr := formatPacket(payload, *ip6tables)
+	packetStr := format.FormatPacket(payload, *ip6tables)
 	ctStr := fmt.Sprintf(" %s 0x%08x", ctInfoStr(ctInfo), getCtMark(ct))
 	if rule.ChainEntry {
 		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x%%s %%s  [In:%%s Out:%%s]\n", maxLength)
