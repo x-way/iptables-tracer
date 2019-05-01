@@ -17,6 +17,7 @@ import (
 
 	conntrack "github.com/florianl/go-conntrack"
 	nflog "github.com/florianl/go-nflog"
+	ctprint "github.com/x-way/iptables-traces/pkg/ctprint"
 )
 
 type iptablesRule struct {
@@ -158,7 +159,7 @@ func main() {
 			lastTime = msg.Time
 			printRule(maxLength, msg.Time, msg.Rule, msg.Mark, msg.Iif, msg.Oif, msg.Payload, msg.Ct, msg.CtInfo)
 			if *debugConntrack && len(msg.Ct) > 0 {
-				printCt(msg.Ct)
+				ctprint.Print(msg.Ct)
 			}
 		}
 	}()

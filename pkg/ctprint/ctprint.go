@@ -1,4 +1,4 @@
-package main
+package ctprint
 
 import (
 	"encoding/binary"
@@ -11,15 +11,15 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func printCt(ctbytes []byte) {
+func Print(ctbytes []byte) {
 	var conn conntrack.Conn
 	var err error
 
 	if conn, err = conntrack.ParseAttributes(ctbytes); err != nil {
 		fmt.Printf("Error extracting CT attributes: %s\n", err)
-		return
+	} else {
+		printConn(conn)
 	}
-	printConn(conn)
 }
 
 func printConn(c conntrack.Conn) {
