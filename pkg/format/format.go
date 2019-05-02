@@ -1,8 +1,9 @@
-package main
+package format
 
 import (
 	"encoding/binary"
 	"fmt"
+	"net"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -368,9 +369,9 @@ func formatPacketGRE(gre *layers.GRE, src, dst string, length int) string {
 		out = out + fmt.Sprintf(", length %d: ", length)
 		switch gre.Protocol {
 		case layers.EthernetTypeIPv4:
-			out = out + formatPacket(gre.LayerPayload(), false)
+			out = out + Packet(gre.LayerPayload(), false)
 		case layers.EthernetTypeIPv6:
-			out = out + formatPacket(gre.LayerPayload(), true)
+			out = out + Packet(gre.LayerPayload(), true)
 		default:
 			out = out + fmt.Sprintf("gre-proto-0x%x", gre.Protocol&0xffff)
 		}
@@ -408,9 +409,9 @@ func formatPacketGRE(gre *layers.GRE, src, dst string, length int) string {
 func formatPacketPPP(ppp *layers.PPP) string {
 	switch ppp.PPPType {
 	case layers.PPPTypeIPv4:
-		return formatPacket(ppp.LayerPayload(), false)
+		return Packet(ppp.LayerPayload(), false)
 	case layers.PPPTypeIPv6:
-		return formatPacket(ppp.LayerPayload(), true)
+		return Packet(ppp.LayerPayload(), true)
 	case layers.PPPTypeMPLSUnicast:
 		return fmt.Sprintf("MPLS, length %d", len(ppp.LayerPayload()))
 	case layers.PPPTypeMPLSMulticast:
@@ -420,7 +421,8 @@ func formatPacketPPP(ppp *layers.PPP) string {
 	}
 }
 
-func formatPacket(payload []byte, isIPv6 bool) string {
+// Packet parses a packet and returns a string with a textual representation similar to the tcpdump output
+func Packet(payload []byte, isIPv6 bool) string {
 	if isIPv6 {
 		packet := gopacket.NewPacket(payload, layers.LayerTypeIPv6, gopacket.Default)
 		if ip6Layer := packet.Layer(layers.LayerTypeIPv6); ip6Layer != nil {
@@ -453,7 +455,7 @@ func formatPacket(payload []byte, isIPv6 bool) string {
 					return "IP6 " + formatPacketGRE(gre, ip6.SrcIP.String(), ip6.DstIP.String(), length)
 				}
 			case layers.LayerTypeIPv4:
-				return fmt.Sprintf("IP6 %s > %s: %s", ip6.SrcIP, ip6.DstIP, formatPacket(ip6.LayerPayload(), false))
+				return fmt.Sprintf("IP6 %s > %s: %s", ip6.SrcIP, ip6.DstIP, Packet(ip6.LayerPayload(), false))
 			}
 			return fmt.Sprintf("IP6 %s > %s: %s, length %d", ip6.SrcIP, ip6.DstIP, ip6.NextLayerType().String(), length)
 		}
@@ -492,10 +494,20 @@ func formatPacket(payload []byte, isIPv6 bool) string {
 					return "IP " + formatPacketGRE(gre, ip4.SrcIP.String(), ip4.DstIP.String(), length)
 				}
 			case layers.LayerTypeIPv6:
-				return fmt.Sprintf("IP %s > %s: %s", ip4.SrcIP, ip4.DstIP, formatPacket(ip4.LayerPayload(), true))
+				return fmt.Sprintf("IP %s > %s: %s", ip4.SrcIP, ip4.DstIP, Packet(ip4.LayerPayload(), true))
 			}
 			return fmt.Sprintf("IP %s > %s: %s, length %d", ip4.SrcIP, ip4.DstIP, ip4.NextLayerType().String(), length)
 		}
 	}
 	return ""
+}
+
+// GetIfaceName takes a network interface index and returns the corresponding name
+func GetIfaceName(index uint32) string {
+	var iface *net.Interface
+	var err error
+	if iface, err = net.InterfaceByIndex(int(index)); err != nil {
+		return ""
+	}
+	return iface.Name
 }

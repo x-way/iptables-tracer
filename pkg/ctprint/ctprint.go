@@ -1,4 +1,4 @@
-package main
+package ctprint
 
 import (
 	"encoding/binary"
@@ -11,15 +11,16 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func printCt(ctbytes []byte) {
+// Print parses the conntrack info from NFLOG and prints a textual representation of the contained conntrack attributes
+func Print(ctbytes []byte) {
 	var conn conntrack.Conn
 	var err error
 
 	if conn, err = conntrack.ParseAttributes(ctbytes); err != nil {
 		fmt.Printf("Error extracting CT attributes: %s\n", err)
-		return
+	} else {
+		printConn(conn)
 	}
-	printConn(conn)
 }
 
 func printConn(c conntrack.Conn) {
@@ -258,4 +259,39 @@ func getCtStatus(data []byte) string {
 		stati = append(stati, "EXPECTED")
 	}
 	return strings.Join(stati, ",")
+}
+
+// InfoString takes the conntrack info value and returns a short textual representation
+func InfoString(ctinfo uint32) string {
+	switch ctinfo {
+	case 0:
+		return "EST O"
+	case 1:
+		return "REL O"
+	case 2:
+		return "NEW O"
+	case 3:
+		return "EST R"
+	case 4:
+		return "REL R"
+	case 5:
+		return "NEW R"
+	case 7:
+		return "UNTRA"
+	case ^uint32(0):
+		return "     "
+	default:
+		return fmt.Sprintf("%5d", ctinfo)
+	}
+
+}
+
+// GetCtMark parses the conntrack info from NFLOG and extracts the connmark
+func GetCtMark(data []byte) uint32 {
+	if conn, err := conntrack.ParseAttributes(data); err == nil {
+		if mark, found := conn[conntrack.AttrMark]; found {
+			return binary.BigEndian.Uint32(mark)
+		}
+	}
+	return 0
 }

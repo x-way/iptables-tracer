@@ -1,4 +1,4 @@
-package main
+package format
 
 import (
 	"io/ioutil"
@@ -21,7 +21,7 @@ func getTcpdumpOutput(filename string) string {
 	return string(out)
 }
 
-func getFormatPacketOutput(filename string) string {
+func getPacketOutput(filename string) string {
 	f, _ := os.Open(filename)
 	defer f.Close()
 	handle, err := pcapgo.NewReader(f)
@@ -34,9 +34,9 @@ func getFormatPacketOutput(filename string) string {
 		if net := packet.NetworkLayer(); net != nil {
 			switch net.LayerType() {
 			case layers.LayerTypeIPv4:
-				out = out + formatPacket(append(net.LayerContents(), net.LayerPayload()...), false) + "\n"
+				out = out + Packet(append(net.LayerContents(), net.LayerPayload()...), false) + "\n"
 			case layers.LayerTypeIPv6:
-				out = out + formatPacket(append(net.LayerContents(), net.LayerPayload()...), true) + "\n"
+				out = out + Packet(append(net.LayerContents(), net.LayerPayload()...), true) + "\n"
 			default:
 				log.Fatal("Non-IP packet found in " + filename)
 			}
@@ -47,15 +47,15 @@ func getFormatPacketOutput(filename string) string {
 	return out
 }
 
-func TestFormatPacketPCAP(t *testing.T) {
-	files, err := ioutil.ReadDir("./tests")
+func TestPacketPCAP(t *testing.T) {
+	files, err := ioutil.ReadDir("../../tests")
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, f := range files {
 		if filepath.Ext(f.Name()) == ".pcap" {
-			expected := getTcpdumpOutput("./tests/" + f.Name())
-			got := getFormatPacketOutput("./tests/" + f.Name())
+			expected := getTcpdumpOutput("../../tests/" + f.Name())
+			got := getPacketOutput("../../tests/" + f.Name())
 			if got != expected {
 				t.Errorf("pcap test failed for %s, got '%s', expected '%s'", f.Name(), got, expected)
 			}
