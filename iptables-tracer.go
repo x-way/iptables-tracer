@@ -173,7 +173,7 @@ func main() {
 }
 
 func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte, ct []byte, ctInfo uint32) {
-	packetStr := format.FormatPacket(payload, *ip6tables)
+	packetStr := format.Packet(payload, *ip6tables)
 	ctStr := fmt.Sprintf(" %s 0x%08x", ctprint.InfoString(ctInfo), ctprint.GetCtMark(ct))
 	if rule.ChainEntry {
 		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x%%s %%s  [In:%%s Out:%%s]\n", maxLength)

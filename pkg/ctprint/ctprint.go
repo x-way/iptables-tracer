@@ -11,6 +11,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// Print parses the conntrack info from NFLOG and prints a textual representation of the contained conntrack attributes
 func Print(ctbytes []byte) {
 	var conn conntrack.Conn
 	var err error
@@ -260,6 +261,7 @@ func getCtStatus(data []byte) string {
 	return strings.Join(stati, ",")
 }
 
+// InfoString takes the conntrack info value and returns a short textual representation
 func InfoString(ctinfo uint32) string {
 	switch ctinfo {
 	case 0:
@@ -284,6 +286,7 @@ func InfoString(ctinfo uint32) string {
 
 }
 
+// GetCtMark parses the conntrack info from NFLOG and extracts the connmark
 func GetCtMark(data []byte) uint32 {
 	if conn, err := conntrack.ParseAttributes(data); err == nil {
 		if mark, found := conn[conntrack.AttrMark]; found {
