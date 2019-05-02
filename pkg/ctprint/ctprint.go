@@ -259,3 +259,36 @@ func getCtStatus(data []byte) string {
 	}
 	return strings.Join(stati, ",")
 }
+
+func InfoString(ctinfo uint32) string {
+	switch ctinfo {
+	case 0:
+		return "EST O"
+	case 1:
+		return "REL O"
+	case 2:
+		return "NEW O"
+	case 3:
+		return "EST R"
+	case 4:
+		return "REL R"
+	case 5:
+		return "NEW R"
+	case 7:
+		return "UNTRA"
+	case ^uint32(0):
+		return "     "
+	default:
+		return fmt.Sprintf("%5d", ctinfo)
+	}
+
+}
+
+func GetCtMark(data []byte) uint32 {
+	if conn, err := conntrack.ParseAttributes(data); err == nil {
+		if mark, found := conn[conntrack.AttrMark]; found {
+			return binary.BigEndian.Uint32(mark)
+		}
+	}
+	return 0
+}

@@ -3,6 +3,7 @@ package format
 import (
 	"encoding/binary"
 	"fmt"
+	"net"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -498,4 +499,13 @@ func FormatPacket(payload []byte, isIPv6 bool) string {
 		}
 	}
 	return ""
+}
+
+func GetIfaceName(index uint32) string {
+	var iface *net.Interface
+	var err error
+	if iface, err = net.InterfaceByIndex(int(index)); err != nil {
+		return ""
+	}
+	return iface.Name
 }
