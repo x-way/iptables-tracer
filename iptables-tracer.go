@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"regexp"
@@ -14,8 +15,10 @@ import (
 	"time"
 
 	nflog "github.com/florianl/go-nflog"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 	ctprint "github.com/x-way/iptables-tracer/pkg/ctprint"
-	format "github.com/x-way/iptables-tracer/pkg/format"
+	"github.com/x-way/pktdump"
 )
 
 type iptablesRule struct {
@@ -119,10 +122,10 @@ func main() {
 						fwMark = mark.(uint32)
 					}
 					if iifIx, found := m[nflog.AttrIfindexIndev]; found {
-						iif = format.GetIfaceName(iifIx.(uint32))
+						iif = GetIfaceName(iifIx.(uint32))
 					}
 					if oifIx, found := m[nflog.AttrIfindexOutdev]; found {
-						oif = format.GetIfaceName(oifIx.(uint32))
+						oif = GetIfaceName(oifIx.(uint32))
 					}
 					if ct, found := m[nflog.AttrCt]; found {
 						ctBytes = ct.([]byte)
@@ -173,7 +176,12 @@ func main() {
 }
 
 func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte, ct []byte, ctInfo uint32) {
-	packetStr := format.Packet(payload, *ip6tables)
+	packetStr := ""
+	if *ip6tables {
+		packetStr = pktdump.Format(gopacket.NewPacket(payload, layers.LayerTypeIPv6, gopacket.Default))
+	} else {
+		packetStr = pktdump.Format(gopacket.NewPacket(payload, layers.LayerTypeIPv4, gopacket.Default))
+	}
 	ctStr := fmt.Sprintf(" %s 0x%08x", ctprint.InfoString(ctInfo), ctprint.GetCtMark(ct))
 	if rule.ChainEntry {
 		fmtStr := fmt.Sprintf("%%s %%-6s %%-%ds 0x%%08x%%s %%s  [In:%%s Out:%%s]\n", maxLength)
@@ -246,4 +254,14 @@ func iptablesRestore(policy []string) {
 
 func cleanupIptables(cleanupID int) {
 	iptablesRestore(clearIptablesPolicy(iptablesSave(), cleanupID))
+}
+
+// GetIfaceName takes a network interface index and returns the corresponding name
+func GetIfaceName(index uint32) string {
+	var iface *net.Interface
+	var err error
+	if iface, err = net.InterfaceByIndex(int(index)); err != nil {
+		return ""
+	}
+	return iface.Name
 }
