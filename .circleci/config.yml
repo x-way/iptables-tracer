@@ -1,0 +1,49 @@
+version: 2
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-latest
+      - build-1.12
+  scheduled:
+    triggers:
+      - schedule:
+          cron: "1 2 * * 5"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-latest
+      - build-1.12
+
+jobs:
+  build-latest: &build-template
+    docker:
+      - image: circleci/golang:latest
+
+    steps:
+      - checkout
+      - run: uname -a
+      - run: go version
+      - run: go env
+      - run: go vet ./...
+      - run:
+          name: Run go tests
+          environment:
+            GOTESTSUM_JUNITFILE: /tmp/test-reports/gotests/junit.xml
+          command: |
+                    mkdir -p /tmp/test-reports/gotests
+                    PATH=/tmp/sbin:$PATH gotestsum
+      - run:
+          name: codecov
+          command: |
+                    PATH=/tmp/sbin:$PATH go test -race -coverprofile=coverage.txt -covermode=atomic
+                    bash <(curl -s https://codecov.io/bash)
+      - store_test_results:
+          path: /tmp/test-reports
+
+  build-1.12:
+    <<: *build-template
+    docker:
+      - image: circleci/golang:1.12
