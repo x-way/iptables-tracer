@@ -10,6 +10,10 @@ matrix:
     - go: master
       if: branch = master AND type = cron
 
+env:
+  global:
+    - GO111MODULE=on
+
 install:
   - go get golang.org/x/lint/golint
   - go get github.com/mattn/goveralls
