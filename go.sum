@@ -4,6 +4,7 @@ github.com/florianl/go-nflog v0.0.0-20190401084518-8393abb58fd4 h1:5/JwrpdIDlN02
 github.com/florianl/go-nflog v0.0.0-20190401084518-8393abb58fd4/go.mod h1:F0bpPphpbGBVmycNnkDFlHFpNY420laFpP0j1VL271I=
 github.com/google/go-cmp v0.2.0 h1:+dTQ8DZQJz0Mb/HjFlkptS1FeQ4cWSnN941F8aEG4SQ=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
+github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/gopacket v1.1.17 h1:rMrlX2ZY2UbvT+sdz3+6J+pp2z+msCq9MxTU6ymxbBY=
 github.com/google/gopacket v1.1.17/go.mod h1:UdDNZ1OO62aGYVnPhxT1U6aI7ukYtA/kB8vaU0diBUM=
 github.com/mdlayher/netlink v0.0.0-20190313131330-258ea9dff42c/go.mod h1:eQB3mZE4aiYnlUsyGGCOpPETfdQq4Jhsgf1fk3cwQaA=
