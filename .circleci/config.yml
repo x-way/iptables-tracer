@@ -5,6 +5,7 @@ workflows:
     jobs:
       - build-latest
       - build-1.12
+      - build-1.13
   scheduled:
     triggers:
       - schedule:
@@ -16,6 +17,7 @@ workflows:
     jobs:
       - build-latest
       - build-1.12
+      - build-1.13
 
 jobs:
   build-latest: &build-template
@@ -27,7 +29,7 @@ jobs:
       - run: uname -a
       - run: go version
       - run: go env
-      - run: go vet ./...
+      - run: go vet -v ./...
       - run:
           name: Run go tests
           environment:
@@ -47,3 +49,8 @@ jobs:
     <<: *build-template
     docker:
       - image: circleci/golang:1.12
+
+  build-1.13:
+    <<: *build-template
+    docker:
+      - image: circleci/golang:1.13
