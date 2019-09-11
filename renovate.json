@@ -1,5 +1,13 @@
 {
   "extends": [
     "config:base"
+  ],
+  "assignees": ["x-way"],
+  "reviewers": ["x-way"],
+  "packageRules": [
+    {
+      "packageNames": ["golang.org/x/sys"],
+      "schedule": ["after 9pm on saturday"]
+    }
   ]
 }
