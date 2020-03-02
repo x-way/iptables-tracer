@@ -23,7 +23,21 @@
       "packagePatterns": [
         "^golang.org/x/"
       ],
-      "schedule": ["after 6pm"]
+      "schedule": [
+        "after 6pm"
+      ]
+    },
+    {
+      "packageNames": [
+        "golang.org/x/sys"
+      ],
+      "updateTypes": [
+        "digest",
+        "patch"
+      ],
+      "reviewers": [],
+      "assignees": [],
+      "automerge": true
     }
   ]
 }
