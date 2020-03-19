@@ -40,12 +40,25 @@ jobs:
                     mkdir -p /tmp/test-reports/gotests
                     PATH=/tmp/sbin:$PATH gotestsum
       - run:
-          name: codecov
+          name: Create coverage report
           command: |
+                    mkdir -p /tmp/test-artifacts
                     PATH=/tmp/sbin:$PATH go test -race -coverprofile=coverage.txt -covermode=atomic
+                    go tool cover -html=coverage.txt -o coverage.html
+                    mv coverage.html /tmp/test-artifacts
+      - run:
+          name: Codecov coverage upload
+          command: |
                     bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: Codacy coverage upload
+          command: |
+                    go get github.com/schrej/godacov
+                    godacov -t $CODACY_PROJECT_TOKEN -r coverage.txt -c $CIRCLE_SHA1
       - store_test_results:
           path: /tmp/test-reports
+      - store_artifacts:
+          path: /tmp/test-artifacts
 
   build-1.12:
     <<: *build-template
