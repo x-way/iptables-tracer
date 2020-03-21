@@ -56,7 +56,6 @@ var (
 )
 
 func main() {
-
 	flag.Parse()
 
 	if *ip6tables {
@@ -117,7 +116,7 @@ func main() {
 					var iif string
 					var oif string
 					var ctBytes []byte
-					var ctInfo = ^uint32(0)
+					ctInfo := ^uint32(0)
 					if mark, found := m[nflog.AttrMark]; found {
 						fwMark = mark.(uint32)
 					}
