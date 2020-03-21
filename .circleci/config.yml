@@ -47,7 +47,7 @@ jobs:
           command: |
                     go get mvdan.cc/gofumpt/gofumports
                     gofumports -d .
-                    [ -z "$(gofumpts -l .)" ]
+                    [ -z "$(gofumports -l .)" ]
       - run:
           name: Run go tests
           environment:
