@@ -1,3 +1,4 @@
+// Package ctprint provides functions to print NFLOG conntrack entries
 package ctprint
 
 import (
