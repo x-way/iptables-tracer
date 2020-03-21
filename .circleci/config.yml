@@ -33,6 +33,22 @@ jobs:
       - run: go env
       - run: go vet -v ./...
       - run:
+          name: golint
+          command: |
+                    go get -u golang.org/x/lint/golint
+                    golint -set_exit_status ./...
+      - run:
+          name: staticcheck.io
+          command: |
+                    go get honnef.co/go/tools/cmd/staticcheck
+                    staticcheck -checks all ./...
+      - run:
+          name: Check gofumports formatting
+          command: |
+                    go get mvdan.cc/gofumpt/gofumports
+                    gofumports -d .
+                    [ -z "$(gofumpts -l .)" ]
+      - run:
           name: Run go tests
           environment:
             GOTESTSUM_JUNITFILE: /tmp/test-reports/gotests/junit.xml
