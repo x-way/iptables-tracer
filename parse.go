@@ -21,7 +21,6 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 	markFilter := ""
 	if fwMark != 0 {
 		markFilter = fmt.Sprintf("-m mark --mark 0x%x/0x%x", fwMark, fwMark)
-
 	}
 
 	table := ""

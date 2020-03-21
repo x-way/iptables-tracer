@@ -1,3 +1,4 @@
+// Package ctprint provides functions to print NFLOG conntrack entries
 package ctprint
 
 import (
@@ -24,7 +25,6 @@ func Print(ctbytes []byte) {
 }
 
 func printConn(c conntrack.Conn) {
-
 	attrMap := make(map[conntrack.ConnAttrType]string)
 
 	attrMap[conntrack.AttrTCPState] = "AttrTCPState"
@@ -117,7 +117,6 @@ func printConn(c conntrack.Conn) {
 
 	}
 	fmt.Printf(" CT: %s\n", strings.Join(attrs, ", "))
-
 }
 
 func formatEndpoints(c conntrack.Conn, orig bool) string {
@@ -283,7 +282,6 @@ func InfoString(ctinfo uint32) string {
 	default:
 		return fmt.Sprintf("%5d", ctinfo)
 	}
-
 }
 
 // GetCtMark parses the conntrack info from NFLOG and extracts the connmark
