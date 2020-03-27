@@ -8,5 +8,5 @@ require (
 	github.com/google/go-cmp v0.4.0
 	github.com/google/gopacket v1.1.17
 	github.com/x-way/pktdump v0.0.1
-	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+	golang.org/x/sys v0.0.0-20200327173247-9dae0f8f5775
 )
