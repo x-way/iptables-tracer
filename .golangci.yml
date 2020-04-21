@@ -1,6 +1,0 @@
-# https://github.com/golangci/golangci/wiki/Configuration
-
-service:
-  prepare:
-    - apt-get update && apt-get install -y libpcap-dev tcpdump
-    - go get -t -d ./...
