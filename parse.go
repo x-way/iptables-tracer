@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMark int, packetLimit int, traceRules bool, nflogGroup int) ([]string, map[int]iptablesRule, int) {
+func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMark, packetLimit int, traceRules bool, nflogGroup int) ([]string, map[int]iptablesRule, int) {
 	var newIptablesConfig []string
 	maxLength := 0
 	ruleMap := make(map[int]iptablesRule)
