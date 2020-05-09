@@ -174,7 +174,7 @@ func main() {
 	close(msgChannel)
 }
 
-func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload []byte, ct []byte, ctInfo uint32) {
+func printRule(maxLength int, ts time.Time, rule iptablesRule, fwMark uint32, iif, oif string, payload, ct []byte, ctInfo uint32) {
 	packetStr := ""
 	if *ip6tables {
 		packetStr = pktdump.Format(gopacket.NewPacket(payload, layers.LayerTypeIPv6, gopacket.Default))
