@@ -29,6 +29,7 @@
     },
     {
       "packageNames": [
+        "github.com/x-way/pktdump",
         "golang.org/x/sys"
       ],
       "updateTypes": [
