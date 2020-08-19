@@ -14,11 +14,11 @@ import (
 	"strconv"
 	"time"
 
-	nflog "github.com/florianl/go-nflog/v2"
+	"github.com/florianl/go-nflog/v2"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/mdlayher/netlink"
-	ctprint "github.com/x-way/iptables-tracer/pkg/ctprint"
+	"github.com/x-way/iptables-tracer/pkg/ctprint"
 	"github.com/x-way/pktdump"
 )
 
@@ -78,8 +78,8 @@ func main() {
 		return
 	}
 
-	if *packetLimit != 0 && *fwMark == 0 {
-		log.Fatal("Error: limit requires fwmark")
+	if (*packetLimit != 0 || *traceRules) && *fwMark == 0 {
+		log.Fatal("Error: limit or trace rules requires fwmark")
 	}
 
 	lines := iptablesSave()
