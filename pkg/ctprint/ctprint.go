@@ -14,13 +14,10 @@ import (
 
 // Print parses the conntrack info from NFLOG and prints a textual representation of the contained conntrack attributes
 func Print(ctbytes []byte) {
-	var conn conntrack.Conn
-	var err error
-
-	if conn, err = conntrack.ParseAttributes(ctbytes); err != nil {
+	if connection, err := conntrack.ParseAttributes(ctbytes); err != nil {
 		fmt.Printf("Error extracting CT attributes: %s\n", err)
 	} else {
-		printConn(conn)
+		printConn(connection)
 	}
 }
 
@@ -286,8 +283,8 @@ func InfoString(ctinfo uint32) string {
 
 // GetCtMark parses the conntrack info from NFLOG and extracts the connmark
 func GetCtMark(data []byte) uint32 {
-	if conn, err := conntrack.ParseAttributes(data); err == nil {
-		if mark, found := conn[conntrack.AttrMark]; found {
+	if connection, err := conntrack.ParseAttributes(data); err == nil {
+		if mark, found := connection[conntrack.AttrMark]; found {
 			return binary.BigEndian.Uint32(mark)
 		}
 	}
