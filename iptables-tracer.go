@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"time"
 
-	nflog "github.com/florianl/go-nflog"
+	nflog "github.com/florianl/go-nflog/v2"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	ctprint "github.com/x-way/iptables-tracer/pkg/ctprint"
@@ -90,8 +90,8 @@ func main() {
 	var nf *nflog.Nflog
 	config := nflog.Config{
 		Group:       uint16(*nflogGroup),
-		Copymode:    nflog.NfUlnlCopyPacket,
-		Flags:       nflog.NfUlnlCfgFConntrack,
+		Copymode:    nflog.CopyPacket,
+		Flags:       nflog.FlagConntrack,
 		ReadTimeout: time.Second,
 	}
 	nf, err = nflog.Open(&config)
@@ -105,8 +105,11 @@ func main() {
 
 	msgChannel := make(chan msg)
 
-	callback := func(m nflog.Msg) int {
-		prefix := m[nflog.AttrPrefix].(string)
+	callback := func(m nflog.Attribute) int {
+		var prefix string
+		if m.Prefix != nil {
+			prefix = *m.Prefix
+		}
 		prefixRe := regexp.MustCompile(`^iptr:(\d+):(\d+)`)
 		if res := prefixRe.FindStringSubmatch(prefix); res != nil {
 			if id, _ := strconv.Atoi(res[1]); id == *traceID {
@@ -117,29 +120,29 @@ func main() {
 					var oif string
 					var ctBytes []byte
 					ctInfo := ^uint32(0)
-					if mark, found := m[nflog.AttrMark]; found {
-						fwMark = mark.(uint32)
+					if m.Mark != nil {
+						fwMark = *m.Mark
 					}
-					if iifIx, found := m[nflog.AttrIfindexIndev]; found {
-						iif = GetIfaceName(iifIx.(uint32))
+					if m.InDev != nil {
+						iif = GetIfaceName(*m.InDev)
 					}
-					if oifIx, found := m[nflog.AttrIfindexOutdev]; found {
-						oif = GetIfaceName(oifIx.(uint32))
+					if m.OutDev != nil {
+						oif = GetIfaceName(*m.OutDev)
 					}
-					if ct, found := m[nflog.AttrCt]; found {
-						ctBytes = ct.([]byte)
+					if m.Ct != nil {
+						ctBytes = *m.Ct
 					}
-					if cti, found := m[nflog.AttrCtInfo]; found {
-						ctInfo = cti.(uint32)
+					if m.CtInfo != nil {
+						ctInfo = *m.CtInfo
 					}
-					if payload, found := m[nflog.AttrPayload]; found {
+					if m.Payload != nil {
 						msgChannel <- msg{
 							Time:    time.Now(),
 							Rule:    myRule,
 							Mark:    fwMark,
 							Iif:     iif,
 							Oif:     oif,
-							Payload: payload.([]byte),
+							Payload: *m.Payload,
 							Ct:      ctBytes,
 							CtInfo:  ctInfo,
 						}
