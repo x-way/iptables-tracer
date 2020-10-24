@@ -1,5 +1,5 @@
-github.com/florianl/go-conntrack v0.1.1-0.20201024094731-eca66a918b3e h1:Svk0DRCJ++K0yg0QPW7IVfXixW/zdPqz/WaE+kLjnE8=
-github.com/florianl/go-conntrack v0.1.1-0.20201024094731-eca66a918b3e/go.mod h1:HRSlXmrl5M//9hiHmkwyLDwlaoba2sVDcBpHFRiVo1Q=
+github.com/florianl/go-conntrack v0.2.0 h1:JEB4w895ZX35tvNH5JjNM9pxa+Qn73paiA37VeCZGfc=
+github.com/florianl/go-conntrack v0.2.0/go.mod h1:HRSlXmrl5M//9hiHmkwyLDwlaoba2sVDcBpHFRiVo1Q=
 github.com/florianl/go-nflog/v2 v2.0.1-0.20201019183757-4cdb5aa8b03d h1:1uykPZfOT1IvpWErbh4ppn9aJgJNBzSzL2Ae72LMQzw=
 github.com/florianl/go-nflog/v2 v2.0.1-0.20201019183757-4cdb5aa8b03d/go.mod h1:EkSwSZYQ9SeSqPzP+A08bh7fegMf6FFII3GHZzWYUWI=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
