@@ -41,11 +41,11 @@ func printConnection(c conntrack.Con) {
 			if c.ProtoInfo.TCP.WScaleRepl != nil {
 				attrs = append(attrs, fmt.Sprintf("wscalereply=%d", *c.ProtoInfo.TCP.WScaleRepl))
 			}
-			if c.ProtoInfo.TCP.FlagsOrig != nil {
-				attrs = append(attrs, fmt.Sprintf("flagsorig=%s", getTCPFlags(*c.ProtoInfo.TCP.FlagsOrig)))
+			if c.ProtoInfo.TCP.FlagsOrig != nil && c.ProtoInfo.TCP.FlagsOrig.Flags != nil {
+				attrs = append(attrs, fmt.Sprintf("flagsorig=%s", getTCPFlags(*c.ProtoInfo.TCP.FlagsOrig.Flags)))
 			}
-			if c.ProtoInfo.TCP.FlagsReply != nil {
-				attrs = append(attrs, fmt.Sprintf("flagsreply=%s", getTCPFlags(*c.ProtoInfo.TCP.FlagsReply)))
+			if c.ProtoInfo.TCP.FlagsReply != nil && c.ProtoInfo.TCP.FlagsReply.Flags != nil {
+				attrs = append(attrs, fmt.Sprintf("flagsreply=%s", getTCPFlags(*c.ProtoInfo.TCP.FlagsReply.Flags)))
 			}
 		}
 	}
@@ -124,9 +124,8 @@ func formatEndpoints(t conntrack.IPTuple) string {
 	return fmt.Sprintf("%s:%s->%s", proto, src, dst)
 }
 
-func getTCPFlags(data []byte) string {
+func getTCPFlags(flags uint8) string {
 	var stati []string
-	flags := data[0]
 	if flags&0x01 == 0x01 {
 		stati = append(stati, "WINDOW_SCALE")
 	}
