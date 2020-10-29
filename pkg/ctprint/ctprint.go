@@ -14,14 +14,22 @@ var stdOutLogger = log.New(os.Stdout, "", log.LstdFlags)
 
 // Print parses the conntrack info from NFLOG and prints a textual representation of the contained conntrack attributes
 func Print(ctbytes []byte) {
-	if connection, err := conntrack.ParseAttributes(stdOutLogger, ctbytes); err != nil {
+	if str, err := Format(ctbytes); err != nil {
 		fmt.Printf("Error extracting CT attributes: %s\n", err)
 	} else {
-		printConnection(connection)
+		fmt.Printf(" CT: %s\n", str)
 	}
 }
 
-func printConnection(c conntrack.Con) {
+func Format(ctbytes []byte) (string, error) {
+	if connection, err := conntrack.ParseAttributes(stdOutLogger, ctbytes); err != nil {
+		return "", err
+	} else {
+		return formatConnection(connection), nil
+	}
+}
+
+func formatConnection(c conntrack.Con) string {
 	var attrs []string
 	if c.Origin != nil {
 		attrs = append(attrs, fmt.Sprintf("orig=%s", formatEndpoints(*c.Origin)))
@@ -66,7 +74,7 @@ func printConnection(c conntrack.Con) {
 		attrs = append(attrs, fmt.Sprintf("status=%s", getCtStatus(*c.Status)))
 	}
 
-	fmt.Printf(" CT: %s\n", strings.Join(attrs, ", "))
+	return strings.Join(attrs, ", ")
 }
 
 func formatEndpoints(t conntrack.IPTuple) string {
