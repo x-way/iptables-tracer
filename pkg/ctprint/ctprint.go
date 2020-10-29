@@ -132,121 +132,85 @@ func formatEndpoints(t conntrack.IPTuple) string {
 	return fmt.Sprintf("%s:%s->%s", proto, src, dst)
 }
 
+var tcpflags = map[uint8]string{
+	0x01: "WINDOW_SCALE",
+	0x02: "SACK_PERM",
+	0x04: "CLOSE_INIT",
+	0x08: "BE_LIBERAL",
+	0x10: "DATA_UNACKNOWLEDGED",
+	0x20: "MAXACK_SET",
+	0x40: "EXP_CHALLENGE_ACK",
+	0x80: "SIMULTANEOUS_OPEN",
+}
+
 func getTCPFlags(flags uint8) string {
 	var stati []string
-	if flags&0x01 == 0x01 {
-		stati = append(stati, "WINDOW_SCALE")
-	}
-	if flags&0x02 == 0x02 {
-		stati = append(stati, "SACK_PERM")
-	}
-	if flags&0x04 == 0x04 {
-		stati = append(stati, "CLOSE_INIT")
-	}
-	if flags&0x08 == 0x08 {
-		stati = append(stati, "BE_LIBERAL")
-	}
-	if flags&0x10 == 0x10 {
-		stati = append(stati, "DATA_UNACKNOWLEDGED")
-	}
-	if flags&0x20 == 0x20 {
-		stati = append(stati, "MAXACK_SET")
-	}
-	if flags&0x40 == 0x40 {
-		stati = append(stati, "EXP_CHALLENGE_ACK")
-	}
-	if flags&0x80 == 0x80 {
-		stati = append(stati, "SIMULTANEOUS_OPEN")
+	var bit uint8
+	for i := 0; i < 8; i++ {
+		bit = 0x01 << i
+		if flags&bit == bit {
+			if str, found := tcpflags[bit]; found {
+				stati = append(stati, str)
+			}
+		}
 	}
 	return strings.Join(stati, ",")
 }
 
+var tcpstates = map[uint8]string{
+	0:  "NONE",
+	1:  "SYN_SENT",
+	2:  "SYN_RECV",
+	3:  "ESTABLISHED",
+	4:  "FIN_WAIT",
+	5:  "CLOSE_WAIT",
+	6:  "LAST_ACK",
+	7:  "TIME_WAIT",
+	8:  "CLOSE",
+	9:  "LISTEN",
+	10: "MAX",
+	11: "IGNORE",
+	12: "RETRANS",
+	13: "UNACK",
+	14: "TIMEOUT_MAX",
+}
+
 func getTCPState(state uint8) string {
-	switch state {
-	case 0:
-		return "NONE"
-	case 1:
-		return "SYN_SENT"
-	case 2:
-		return "SYN_RECV"
-	case 3:
-		return "ESTABLISHED"
-	case 4:
-		return "FIN_WAIT"
-	case 5:
-		return "CLOSE_WAIT"
-	case 6:
-		return "LAST_ACK"
-	case 7:
-		return "TIME_WAIT"
-	case 8:
-		return "CLOSE"
-	case 9:
-		return "LISTEN"
-	case 10:
-		return "MAX"
-	case 11:
-		return "IGNORE"
-	case 12:
-		return "RETRANS"
-	case 13:
-		return "UNACK"
-	case 14:
-		return "TIMEOUT_MAX"
-	default:
-		return fmt.Sprintf("UNKNOWN:0x%x", state)
+	if str, found := tcpstates[state]; found {
+		return str
 	}
+	return fmt.Sprintf("UNKNOWN:0x%x", state)
+}
+
+var ctstates = map[uint32]string{
+	0x0001: "EXPECTED",
+	0x0002: "SEEN_REPLY",
+	0x0004: "ASSURED",
+	0x0008: "CONFIRMED",
+	0x0010: "SRC_NAT",
+	0x0020: "DST_NAT",
+	0x0040: "SEQ_ADJUST",
+	0x0080: "SRC_NAT_DONE",
+	0x0100: "DST_NAT_DONE",
+	0x0200: "DYING",
+	0x0400: "FIXED_TIMEOUT",
+	0x0800: "TEMPLATE",
+	0x1000: "UNTRACKED",
+	0x2000: "HELPER",
+	0x4000: "OFFLOAD",
+	0x8000: "EXPECTED",
 }
 
 func getCtStatus(ctstatus uint32) string {
 	var stati []string
-	if ctstatus&(1<<0) == (1 << 0) {
-		stati = append(stati, "EXPECTED")
-	}
-	if ctstatus&(1<<1) == (1 << 1) {
-		stati = append(stati, "SEEN_REPLY")
-	}
-	if ctstatus&(1<<2) == (1 << 2) {
-		stati = append(stati, "ASSURED")
-	}
-	if ctstatus&(1<<3) == (1 << 3) {
-		stati = append(stati, "CONFIRMED")
-	}
-	if ctstatus&(1<<4) == (1 << 4) {
-		stati = append(stati, "SRC_NAT")
-	}
-	if ctstatus&(1<<5) == (1 << 5) {
-		stati = append(stati, "DST_NAT")
-	}
-	if ctstatus&(1<<6) == (1 << 6) {
-		stati = append(stati, "SEQ_ADJUST")
-	}
-	if ctstatus&(1<<7) == (1 << 7) {
-		stati = append(stati, "SRC_NAT_DONE")
-	}
-	if ctstatus&(1<<8) == (1 << 8) {
-		stati = append(stati, "DST_NAT_DONE")
-	}
-	if ctstatus&(1<<9) == (1 << 9) {
-		stati = append(stati, "DYING")
-	}
-	if ctstatus&(1<<10) == (1 << 10) {
-		stati = append(stati, "FIXED_TIMEOUT")
-	}
-	if ctstatus&(1<<11) == (1 << 11) {
-		stati = append(stati, "TEMPLATE")
-	}
-	if ctstatus&(1<<12) == (1 << 12) {
-		stati = append(stati, "UNTRACKED")
-	}
-	if ctstatus&(1<<13) == (1 << 13) {
-		stati = append(stati, "HELPER")
-	}
-	if ctstatus&(1<<14) == (1 << 14) {
-		stati = append(stati, "OFFLOAD")
-	}
-	if ctstatus&(1<<15) == (1 << 15) {
-		stati = append(stati, "EXPECTED")
+	var bit uint32
+	for i := 0; i < 16; i++ {
+		bit = 0x01 << i
+		if ctstatus&bit == bit {
+			if str, found := ctstates[bit]; found {
+				stati = append(stati, str)
+			}
+		}
 	}
 	return strings.Join(stati, ",")
 }
