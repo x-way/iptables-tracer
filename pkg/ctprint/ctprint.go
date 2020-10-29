@@ -21,12 +21,13 @@ func Print(ctbytes []byte) {
 	}
 }
 
+// Format parses the conntrack info from NFLOG and returns a textual representation of the contained conntrack attributes
 func Format(ctbytes []byte) (string, error) {
-	if connection, err := conntrack.ParseAttributes(stdOutLogger, ctbytes); err != nil {
+	connection, err := conntrack.ParseAttributes(stdOutLogger, ctbytes)
+	if err != nil {
 		return "", err
-	} else {
-		return formatConnection(connection), nil
 	}
+	return formatConnection(connection), nil
 }
 
 func formatConnection(c conntrack.Con) string {
