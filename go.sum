@@ -1,7 +1,7 @@
-github.com/florianl/go-conntrack v0.1.1-0.20201024094731-eca66a918b3e h1:Svk0DRCJ++K0yg0QPW7IVfXixW/zdPqz/WaE+kLjnE8=
-github.com/florianl/go-conntrack v0.1.1-0.20201024094731-eca66a918b3e/go.mod h1:HRSlXmrl5M//9hiHmkwyLDwlaoba2sVDcBpHFRiVo1Q=
-github.com/florianl/go-nflog/v2 v2.0.1-0.20201019183757-4cdb5aa8b03d h1:1uykPZfOT1IvpWErbh4ppn9aJgJNBzSzL2Ae72LMQzw=
-github.com/florianl/go-nflog/v2 v2.0.1-0.20201019183757-4cdb5aa8b03d/go.mod h1:EkSwSZYQ9SeSqPzP+A08bh7fegMf6FFII3GHZzWYUWI=
+github.com/florianl/go-conntrack v0.2.1-0.20201024105704-416cb5f878a8 h1:szfZkRPl5QOcZ1LRCOKWQbPycC10aoy04LJAPVJh0nQ=
+github.com/florianl/go-conntrack v0.2.1-0.20201024105704-416cb5f878a8/go.mod h1:HRSlXmrl5M//9hiHmkwyLDwlaoba2sVDcBpHFRiVo1Q=
+github.com/florianl/go-nflog/v2 v2.0.1-0.20201031170521-0e41e20cb7e6 h1:NoxkISr8toRxNlPpmBa2fexrC4NQrTL4e9rjS57fD8w=
+github.com/florianl/go-nflog/v2 v2.0.1-0.20201031170521-0e41e20cb7e6/go.mod h1:EkSwSZYQ9SeSqPzP+A08bh7fegMf6FFII3GHZzWYUWI=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
@@ -45,9 +45,8 @@ golang.org/x/sys v0.0.0-20191010194322-b09406accb47/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200828194041-157a740278f4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20200908134130-d2e65c121b96 h1:gJciq3lOg0eS9fSZJcoHfv7q1BfC6cJfnmSSKL1yu3Q=
 golang.org/x/sys v0.0.0-20200908134130-d2e65c121b96/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd h1:WgqgiQvkiZWz7XLhphjt2GI2GcGCTIZs9jqXMWmH+oc=
-golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/tools v0.0.0-20200130002326-2f3ba24bd6e7/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
