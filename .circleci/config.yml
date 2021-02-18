@@ -77,9 +77,9 @@ jobs:
   build-1.14:
     <<: *build-template
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
 
   build-1.15:
     <<: *build-template
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
