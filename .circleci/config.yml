@@ -3,9 +3,7 @@ workflows:
   version: 2
   build:
     jobs:
-      - build-latest
-      - build-1.14
-      - build-1.15
+      - build
   scheduled:
     triggers:
       - schedule:
@@ -15,14 +13,12 @@ workflows:
               only:
                 - master
     jobs:
-      - build-latest
-      - build-1.14
-      - build-1.15
+      - build
 
 jobs:
-  build-latest: &build-template
+  build:
     docker:
-      - image: circleci/golang:latest
+      - image: circleci/golang:1.16
 
     steps:
       - checkout
@@ -33,17 +29,17 @@ jobs:
       - run:
           name: golint
           command: |
-                    go get -u golang.org/x/lint/golint
+                    go install golang.org/x/lint/golint@latest
                     golint -set_exit_status ./...
       - run:
           name: staticcheck.io
           command: |
-                    go get honnef.co/go/tools/cmd/staticcheck
+                    go install honnef.co/go/tools/cmd/staticcheck@latest
                     staticcheck -checks all ./...
       - run:
           name: Check gofumpt formatting
           command: |
-                    go get mvdan.cc/gofumpt
+                    go install mvdan.cc/gofumpt@latest
                     gofumpt -d .
                     [ -z "$(gofumpt -l .)" ]
       - run:
@@ -67,19 +63,9 @@ jobs:
       - run:
           name: Codacy coverage upload
           command: |
-                    go get github.com/schrej/godacov
+                    go install github.com/schrej/godacov@latest
                     godacov -t $CODACY_PROJECT_TOKEN -r coverage.txt -c $CIRCLE_SHA1
       - store_test_results:
           path: /tmp/test-reports
       - store_artifacts:
           path: /tmp/test-artifacts
-
-  build-1.14:
-    <<: *build-template
-    docker:
-      - image: circleci/golang:1.14
-
-  build-1.15:
-    <<: *build-template
-    docker:
-      - image: circleci/golang:1.15
