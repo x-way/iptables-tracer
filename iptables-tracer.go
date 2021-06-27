@@ -17,6 +17,7 @@ import (
 	nflog "github.com/florianl/go-nflog/v2"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/mdlayher/netlink"
 	ctprint "github.com/x-way/iptables-tracer/pkg/ctprint"
 	"github.com/x-way/pktdump"
 )
@@ -167,7 +168,17 @@ func main() {
 		}
 	}()
 
-	err = nf.Register(ctx, callback)
+	errorFunc := func(err error) int {
+		if opError, ok := err.(*netlink.OpError); ok {
+			if opError.Timeout() || opError.Temporary() {
+				return 0
+			}
+		}
+		log.Fatal(fmt.Sprintf("Could not receive message: %v\n", err))
+		return 1
+	}
+
+	err = nf.RegisterWithErrorFunc(ctx, callback, errorFunc)
 	if err != nil {
 		log.Fatal(err)
 	}
