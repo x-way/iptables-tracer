@@ -3,8 +3,8 @@ github.com/cilium/ebpf v0.5.0/go.mod h1:4tRaxcgiL706VnOzHOdBlY8IEAIdxINsQBcU4xJJ
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/florianl/go-conntrack v0.3.0 h1:DUY84Mce+/lE9dJi2EWvGYacQtX2X96J9aVWV99l8UE=
 github.com/florianl/go-conntrack v0.3.0/go.mod h1:Q+Um4J/nWUXSbnyzQRMOP4eweSeEQ2G8sfCO5gMz6Pw=
-github.com/florianl/go-nflog/v2 v2.0.1-0.20210227082804-4fecbe25c137 h1:BGdccNkmsK856Itx0ANQg2PhMWZElH9DTl82bM+3f/I=
-github.com/florianl/go-nflog/v2 v2.0.1-0.20210227082804-4fecbe25c137/go.mod h1:yViECCzGYmg0O92pcrsNid5v6tkmZVMwPAOxlYG2Wrc=
+github.com/florianl/go-nflog/v2 v2.0.1 h1:8csWIqFQ2vDaZJkxezY3dXDB7bEFg0VRFsYd2Bzj3II=
+github.com/florianl/go-nflog/v2 v2.0.1/go.mod h1:g+SOgM/SuePn9bvS/eo3Ild7J71nSb29OzbxR+7cln0=
 github.com/frankban/quicktest v1.11.3 h1:8sXhOn0uLys67V8EsXLc6eszDs8VXWxL3iRvebPhedY=
 github.com/frankban/quicktest v1.11.3/go.mod h1:wRf/ReqHper53s+kmmSZizM8NamnL3IM0I9ntUbOk+k=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
@@ -93,7 +93,6 @@ golang.org/x/sys v0.0.0-20210110051926-789bb1bd4061/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20210123111255-9b0068b26619/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210216163648-f7da38b97c65/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20210227040730-b0d1d43c014d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210423082822-04245dca01da/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
