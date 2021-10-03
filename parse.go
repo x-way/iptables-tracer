@@ -40,11 +40,11 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 			// we are at the end of a table, add aritificial rules for all chains in this table
 			for _, chain := range chainMap[table] {
 				ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: chain, ChainEntry: true}
-				traceRule := buildChainTraceRule(chain, traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
+				traceRule := buildTraceRule("-I", chain, traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
 				ruleIndex++
 				newIptablesConfig = append(newIptablesConfig, traceRule)
 				if table == "raw" && chain == "PREROUTING" && packetLimit != 0 {
-					newIptablesConfig = append(newIptablesConfig, buildMarkRule(chain, traceFilter, traceID, packetLimit, fwMark))
+					newIptablesConfig = append(newIptablesConfig, buildMarkRule("-I", chain, traceFilter, traceID, packetLimit, fwMark))
 				}
 			}
 		}
@@ -56,7 +56,7 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 				log.Fatal("Error: found rule definition before initial table definition")
 			}
 			ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: res[1], Rule: res[2]}
-			traceRule := buildTraceRule(res[1], traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
+			traceRule := buildTraceRule("-A", res[1], traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
 			ruleIndex++
 			newIptablesConfig = append(newIptablesConfig, traceRule)
 		}
@@ -86,20 +86,8 @@ func clearIptablesPolicy(policy []string, cleanupID int) []string {
 	return newIptablesConfig
 }
 
-func buildChainTraceRule(chain, traceFilter, markFilter string, traceID, ruleIndex, nflogGroup int) string {
-	rule := []string{"-I", chain}
-	if traceFilter != "" {
-		rule = append(rule, traceFilter)
-	}
-	if markFilter != "" {
-		rule = append(rule, markFilter)
-	}
-	rule = append(rule, fmt.Sprintf("-j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", traceID, ruleIndex, nflogGroup))
-	return strings.Join(rule, " ")
-}
-
-func buildMarkRule(chain, traceFilter string, traceID, packetLimit, fwMark int) string {
-	rule := []string{"-I", chain}
+func buildMarkRule(command, chain, traceFilter string, traceID, packetLimit, fwMark int) string {
+	rule := []string{command, chain}
 	if traceFilter != "" {
 		rule = append(rule, traceFilter)
 	}
@@ -111,8 +99,8 @@ func buildMarkRule(chain, traceFilter string, traceID, packetLimit, fwMark int) 
 	return strings.Join(rule, " ")
 }
 
-func buildTraceRule(chain, traceFilter, markFilter string, traceID, ruleIndex, nflogGroup int) string {
-	rule := []string{"-A", chain}
+func buildTraceRule(command, chain, traceFilter, markFilter string, traceID, ruleIndex, nflogGroup int) string {
+	rule := []string{command, chain}
 	if traceFilter != "" {
 		rule = append(rule, traceFilter)
 	}
