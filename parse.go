@@ -9,7 +9,7 @@ import (
 
 func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMark, packetLimit int, traceRules bool, nflogGroup int) ([]string, map[int]iptablesRule, int) {
 	var newIptablesConfig []string
-	maxLength := 0
+	maxChainNameLength := 0
 	ruleMap := make(map[int]iptablesRule)
 	chainMap := make(map[string][]string)
 
@@ -31,8 +31,8 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 				log.Fatal("Error: found chain definition before initial table definition")
 			}
 			chainMap[table] = append(chainMap[table], res[1])
-			if len(res[1]) > maxLength {
-				maxLength = len(res[1])
+			if len(res[1]) > maxChainNameLength {
+				maxChainNameLength = len(res[1])
 			}
 		}
 		if res := commitRe.FindStringSubmatch(line); res != nil {
@@ -62,7 +62,7 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 		newIptablesConfig = append(newIptablesConfig, line)
 	}
 
-	return newIptablesConfig, ruleMap, maxLength
+	return newIptablesConfig, ruleMap, maxChainNameLength
 }
 
 func clearIptablesPolicy(policy []string, cleanupID int) []string {
