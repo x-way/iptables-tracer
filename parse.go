@@ -5,6 +5,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMark, packetLimit int, traceRules bool, nflogGroup int) ([]string, map[int]iptablesRule, int) {
@@ -39,11 +40,11 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 			// we are at the end of a table, add aritificial rules for all chains in this table
 			for _, chain := range chainMap[table] {
 				ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: chain, ChainEntry: true}
-				traceRule := fmt.Sprintf("-I %s %s %s -j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", chain, traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
+				traceRule := buildChainTraceRule(chain, traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
 				ruleIndex++
 				newIptablesConfig = append(newIptablesConfig, traceRule)
 				if table == "raw" && chain == "PREROUTING" && packetLimit != 0 {
-					newIptablesConfig = append(newIptablesConfig, fmt.Sprintf("-I %s %s -m comment --comment \"iptr:%d:limit\" -m limit --limit %d/minute --limit-burst 1 -j MARK --set-xmark 0x%x/0x%x", chain, traceFilter, traceID, packetLimit, fwMark, fwMark))
+					newIptablesConfig = append(newIptablesConfig, buildMarkRule(chain, traceFilter, traceID, packetLimit, fwMark))
 				}
 			}
 		}
@@ -55,7 +56,7 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 				log.Fatal("Error: found rule definition before initial table definition")
 			}
 			ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: res[1], Rule: res[2]}
-			traceRule := fmt.Sprintf("-A %s %s %s -j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", res[1], traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
+			traceRule := buildTraceRule(res[1], traceFilter, markFilter, traceID, ruleIndex, nflogGroup)
 			ruleIndex++
 			newIptablesConfig = append(newIptablesConfig, traceRule)
 		}
@@ -68,7 +69,7 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 func clearIptablesPolicy(policy []string, cleanupID int) []string {
 	var newIptablesConfig []string
 	iptrRe := regexp.MustCompile(`\s+--nflog-prefix\s+"iptr:(\d+):\d+"`)
-	limitRe := regexp.MustCompile(`\s+--comment\s+"iptr:(\d+):limit"`)
+	limitRe := regexp.MustCompile(`\s+--comment\s+"iptr:(\d+):mark"`)
 	for _, line := range policy {
 		if res := iptrRe.FindStringSubmatch(line); res != nil {
 			if id, _ := strconv.Atoi(res[1]); id == cleanupID || cleanupID == 0 {
@@ -83,4 +84,41 @@ func clearIptablesPolicy(policy []string, cleanupID int) []string {
 		newIptablesConfig = append(newIptablesConfig, line)
 	}
 	return newIptablesConfig
+}
+
+func buildChainTraceRule(chain, traceFilter, markFilter string, traceID, ruleIndex, nflogGroup int) string {
+	rule := []string{"-I", chain}
+	if traceFilter != "" {
+		rule = append(rule, traceFilter)
+	}
+	if markFilter != "" {
+		rule = append(rule, markFilter)
+	}
+	rule = append(rule, fmt.Sprintf("-j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", traceID, ruleIndex, nflogGroup))
+	return strings.Join(rule, " ")
+}
+
+func buildMarkRule(chain, traceFilter string, traceID, packetLimit, fwMark int) string {
+	rule := []string{"-I", chain}
+	if traceFilter != "" {
+		rule = append(rule, traceFilter)
+	}
+	rule = append(rule, fmt.Sprintf("-m comment --comment \"iptr:%d:mark\"", traceID))
+	if packetLimit != 0 {
+		rule = append(rule, fmt.Sprintf("-m limit --limit %d/minute --limit-burst 1", packetLimit))
+	}
+	rule = append(rule, fmt.Sprintf("-j MARK --set-xmark 0x%x/0x%x", fwMark, fwMark))
+	return strings.Join(rule, " ")
+}
+
+func buildTraceRule(chain, traceFilter, markFilter string, traceID, ruleIndex, nflogGroup int) string {
+	rule := []string{"-A", chain}
+	if traceFilter != "" {
+		rule = append(rule, traceFilter)
+	}
+	if markFilter != "" {
+		rule = append(rule, markFilter)
+	}
+	rule = append(rule, fmt.Sprintf("-j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", traceID, ruleIndex, nflogGroup))
+	return strings.Join(rule, " ")
 }
