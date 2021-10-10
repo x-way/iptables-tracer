@@ -45,7 +45,7 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 			// we are at the end of a table, add aritificial rules for all chains in this table
 			for _, chain := range chainMap[table] {
 				ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: chain, ChainEntry: true}
-				traceRule := buildTraceRule("-I", chain, buildRuleFilter(traceFilter, markFilter), traceID, ruleIndex, nflogGroup)
+				traceRule := buildTraceRule("-I", chain, []string{traceFilter, markFilter}, traceID, ruleIndex, nflogGroup)
 				ruleIndex++
 				newIptablesConfig = append(newIptablesConfig, traceRule)
 				if table == "raw" && chain == "PREROUTING" && (packetLimit != 0 || traceRules) {
@@ -60,10 +60,10 @@ func extendIptablesPolicy(lines []string, traceID int, traceFilter string, fwMar
 			if table == "" {
 				log.Fatal("Error: found rule definition before initial table definition")
 			}
-			ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: res[1], Rule: res[2]}
 			if resolvedRuleFilter, ok := resolveRuleFilterAndMergeMark(res[2], fwMark); !ok {
 				log.Fatalf("Error: fwMark conflicts with the rule: %s, choose another proper value", line)
 			} else {
+				ruleMap[ruleIndex] = iptablesRule{Table: table, Chain: res[1], Rule: res[2]}
 				traceRule := buildTraceRule("-A", res[1], resolvedRuleFilter, traceID, ruleIndex, nflogGroup)
 				ruleIndex++
 				newIptablesConfig = append(newIptablesConfig, traceRule)
@@ -108,30 +108,22 @@ func buildMarkRule(command, chain, traceFilter string, traceID, packetLimit, fwM
 	return strings.Join(rule, " ")
 }
 
-func buildTraceRule(command, chain, filter string, traceID, ruleIndex, nflogGroup int) string {
+func buildTraceRule(command, chain string, filter []string, traceID, ruleIndex, nflogGroup int) string {
 	rule := []string{command, chain}
-	if filter != "" {
-		rule = append(rule, filter)
+	for _, f := range filter {
+		if f != "" {
+			rule = append(rule, f)
+		}
 	}
 	rule = append(rule, fmt.Sprintf("-j NFLOG --nflog-prefix \"iptr:%d:%d\" --nflog-group %d", traceID, ruleIndex, nflogGroup))
 	return strings.Join(rule, " ")
 }
 
-func buildRuleFilter(filters ...string) string {
-	var nonEmptyFilters []string
-	for _, f := range filters {
-		if f != "" {
-			nonEmptyFilters = append(nonEmptyFilters, f)
-		}
-	}
-	return strings.Join(nonEmptyFilters, " ")
-}
-
-func resolveRuleFilterAndMergeMark(rule string, fwMark int) (string, bool) {
+func resolveRuleFilterAndMergeMark(rule string, fwMark int) ([]string, bool) {
 	traceMarkFilter := fmt.Sprintf("-m mark --mark 0x%x/0x%x", fwMark, fwMark)
 	ruleFilter := ruleFilterRe.FindStringSubmatch(rule)
 	if ruleFilter == nil {
-		return traceMarkFilter, true
+		return []string{traceMarkFilter}, true
 	}
 	markMerged := false
 	markConflict := false
@@ -146,11 +138,11 @@ func resolveRuleFilterAndMergeMark(rule string, fwMark int) (string, bool) {
 	})
 	switch {
 	case markConflict:
-		return "", false
+		return []string{}, false
 	case markMerged:
-		return resolvedFilter, true
+		return []string{resolvedFilter}, true
 	default:
-		return buildRuleFilter(resolvedFilter, traceMarkFilter), true
+		return []string{resolvedFilter, traceMarkFilter}, true
 	}
 }
 
