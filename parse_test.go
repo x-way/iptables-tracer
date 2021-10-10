@@ -376,20 +376,20 @@ func TestResolveFilter(t *testing.T) {
 	cases := []struct {
 		originalRule   string
 		fwMark         int
-		resolvedFilter string
+		resolvedFilter []string
 		ok             bool
 	}{
-		{"-j ACCEPT", 5, "-m mark --mark 0x5/0x5", true},
-		{"-g OUTPUT", 5, "-m mark --mark 0x5/0x5", true},
-		{"-s 1.1.1.1 -j ACCEPT", 5, "-s 1.1.1.1 -m mark --mark 0x5/0x5", true},
-		{"-m mark --mark 1 -j ACCEPT", 5, "", false},
-		{"-m mark --mark 1/1 -j ACCEPT", 5, "", false},
-		{"-m mark --mark 0x2/0x2 -j ACCEPT", 5, "-m mark --mark 0x7/0x7", true},
-		{"-m mark --mark 0x4/0x5 -j ACCEPT", 5, "", false},
-		{"-m mark --mark 0x1/0x3 -j ACCEPT", 5, "", false},
-		{"-m mark --mark 0xf0/0xf0 -j ACCEPT", 5, "-m mark --mark 0xf5/0xf5", true},
-		{"-m mark ! --mark 0xf0/0xf0 -j ACCEPT", 5, "-m mark --mark 0x5/0x5", true},
-		{"-m mark ! --mark 0xf1/0xf1 -j ACCEPT", 5, "", false},
+		{"-j ACCEPT", 5, []string{"-m mark --mark 0x5/0x5"}, true},
+		{"-g OUTPUT", 5, []string{"-m mark --mark 0x5/0x5"}, true},
+		{"-s 1.1.1.1 -j ACCEPT", 5, []string{"-s 1.1.1.1", "-m mark --mark 0x5/0x5"}, true},
+		{"-m mark --mark 1 -j ACCEPT", 5, []string{}, false},
+		{"-m mark --mark 1/1 -j ACCEPT", 5, []string{}, false},
+		{"-m mark --mark 0x2/0x2 -j ACCEPT", 5, []string{"-m mark --mark 0x7/0x7"}, true},
+		{"-m mark --mark 0x4/0x5 -j ACCEPT", 5, []string{}, false},
+		{"-m mark --mark 0x1/0x3 -j ACCEPT", 5, []string{}, false},
+		{"-m mark --mark 0xf0/0xf0 -j ACCEPT", 5, []string{"-m mark --mark 0xf5/0xf5"}, true},
+		{"-m mark ! --mark 0xf0/0xf0 -j ACCEPT", 5, []string{"-m mark --mark 0x5/0x5"}, true},
+		{"-m mark ! --mark 0xf1/0xf1 -j ACCEPT", 5, []string{}, false},
 	}
 	for id, c := range cases {
 		filter, ok := resolveRuleFilterAndMergeMark(c.originalRule, c.fwMark)
