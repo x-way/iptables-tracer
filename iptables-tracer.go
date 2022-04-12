@@ -174,7 +174,7 @@ func main() {
 				return 0
 			}
 		}
-		log.Fatal(fmt.Sprintf("Could not receive message: %v\n", err))
+		log.Fatalf("Could not receive message: %v\n", err)
 		return 1
 	}
 
