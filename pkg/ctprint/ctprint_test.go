@@ -1,7 +1,7 @@
 package ctprint_test
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -101,7 +101,7 @@ func Test_Print(t *testing.T) {
 			ctprint.Print(tt.Bytes)
 
 			w.Close()
-			obuf, _ := ioutil.ReadAll(r)
+			obuf, _ := io.ReadAll(r)
 			os.Stdout = realStdout
 			got := string(obuf)
 			got = strings.TrimSuffix(got, "\n")
