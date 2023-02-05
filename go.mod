@@ -3,7 +3,7 @@ module github.com/x-way/iptables-tracer
 go 1.19
 
 require (
-	github.com/florianl/go-conntrack v0.3.0
+	github.com/florianl/go-conntrack v0.4.0
 	github.com/florianl/go-nflog/v2 v2.0.1
 	github.com/google/go-cmp v0.5.9
 	github.com/google/gopacket v1.1.19
