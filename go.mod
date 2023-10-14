@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/gopacket v1.1.19
 	github.com/mdlayher/netlink v1.7.2
-	github.com/x-way/pktdump v0.0.4
+	github.com/x-way/pktdump v0.0.5
 )
 
 require (
