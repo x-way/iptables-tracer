@@ -1,6 +1,8 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:base",
+    ":disableDependencyDashboard"
   ],
   "assignees": [
     "x-way"
@@ -16,24 +18,37 @@
   ],
   "packageRules": [
     {
+      "packageNames": [
+        "github.com/x-way/iptables-tracer"
+        "go4.org/netipx",
+        "golang.org/x/crypto/x509roots/fallback",
+        "golang.org/x/exp",
+      ],
       "updateTypes": [
-        "digest",
-        "patch"
+        "patch",
+        "digest"
       ],
-      "packagePatterns": [
-        "^golang.org/x/"
-      ],
-      "schedule": [
-        "after 6pm"
-      ]
+      "reviewers": [],
+      "assignees": [],
+      "automerge": true
     },
     {
       "packageNames": [
-        "github.com/x-way/pktdump",
-        "golang.org/x/sys"
+        "golang.org/x/net"
+        "golang.org/x/sync",
+        "golang.org/x/sys",
+        "golang.org/x/time",
       ],
       "updateTypes": [
-        "digest",
+        "patch",
+        "minor"
+      ],
+      "reviewers": [],
+      "assignees": [],
+      "automerge": true
+    },
+    {
+      "updateTypes": [
         "patch"
       ],
       "reviewers": [],
