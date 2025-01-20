@@ -19,10 +19,10 @@
   "packageRules": [
     {
       "packageNames": [
-        "github.com/x-way/iptables-tracer"
+        "github.com/x-way/iptables-tracer",
         "go4.org/netipx",
         "golang.org/x/crypto/x509roots/fallback",
-        "golang.org/x/exp",
+        "golang.org/x/exp"
       ],
       "updateTypes": [
         "patch",
@@ -34,10 +34,10 @@
     },
     {
       "packageNames": [
-        "golang.org/x/net"
+        "golang.org/x/net",
         "golang.org/x/sync",
         "golang.org/x/sys",
-        "golang.org/x/time",
+        "golang.org/x/time"
       ],
       "updateTypes": [
         "patch",
