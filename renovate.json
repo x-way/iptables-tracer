@@ -14,17 +14,28 @@
     "renovate"
   ],
   "postUpdateOptions": [
-    "gomodTidy"
+    "gomodTidy",
+    "gomodUpdateImportPaths",
+    "gomodVendor"
   ],
   "packageRules": [
     {
-      "packageNames": [
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchDepTypes": [
+        "indirect"
+      ],
+      "enabled": true
+    },
+    {
+      "matchPackageNames": [
         "github.com/x-way/iptables-tracer",
         "go4.org/netipx",
         "golang.org/x/crypto/x509roots/fallback",
         "golang.org/x/exp"
       ],
-      "updateTypes": [
+      "matchUpdateTypes": [
         "patch",
         "digest"
       ],
@@ -33,13 +44,13 @@
       "automerge": true
     },
     {
-      "packageNames": [
+      "matchPackageNames": [
         "golang.org/x/net",
         "golang.org/x/sync",
         "golang.org/x/sys",
         "golang.org/x/time"
       ],
-      "updateTypes": [
+      "matchUpdateTypes": [
         "patch",
         "minor"
       ],
@@ -48,7 +59,21 @@
       "automerge": true
     },
     {
-      "updateTypes": [
+      "matchPackageNames": [
+        "cimg/go"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "reviewers": [],
+      "assignees": [],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": [
         "patch"
       ],
       "reviewers": [],
