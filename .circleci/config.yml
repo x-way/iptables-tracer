@@ -18,7 +18,7 @@ workflows:
 jobs:
   build:
     docker:
-      - image: cimg/go:1.23
+      - image: cimg/go:1.24
 
     steps:
       - checkout
