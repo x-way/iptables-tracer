@@ -2,7 +2,7 @@ module github.com/x-way/iptables-tracer
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	github.com/florianl/go-conntrack v0.4.0
