@@ -46,6 +46,8 @@
     {
       "matchPackageNames": [
         "github.com/google/go-cmp",
+        "golang.org/x/crypto",
+        "golang.org/x/image",
         "golang.org/x/mod",
         "golang.org/x/net",
         "golang.org/x/sync",
