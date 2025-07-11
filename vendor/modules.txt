@@ -30,7 +30,7 @@ github.com/mdlayher/socket
 # github.com/x-way/pktdump v0.0.6
 ## explicit; go 1.19
 github.com/x-way/pktdump
-# golang.org/x/net v0.41.0
+# golang.org/x/net v0.42.0
 ## explicit; go 1.23.0
 golang.org/x/net/bpf
 # golang.org/x/sync v0.16.0
