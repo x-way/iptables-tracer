@@ -2,8 +2,8 @@
 ## explicit; go 1.13
 github.com/florianl/go-conntrack
 github.com/florianl/go-conntrack/internal/unix
-# github.com/florianl/go-nflog/v2 v2.1.0
-## explicit; go 1.13
+# github.com/florianl/go-nflog/v2 v2.2.0
+## explicit; go 1.18
 github.com/florianl/go-nflog/v2
 github.com/florianl/go-nflog/v2/internal/unix
 # github.com/google/go-cmp v0.7.0

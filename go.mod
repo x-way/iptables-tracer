@@ -4,7 +4,7 @@ go 1.24.6
 
 require (
 	github.com/florianl/go-conntrack v0.4.0
-	github.com/florianl/go-nflog/v2 v2.1.0
+	github.com/florianl/go-nflog/v2 v2.2.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/gopacket v1.1.19
 	github.com/mdlayher/netlink v1.8.0

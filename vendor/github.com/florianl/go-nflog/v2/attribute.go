@@ -22,7 +22,7 @@ func extractAttribute(a *Attribute, logger Logger, data []byte) error {
 		case nfUlaAttrPacketHdr:
 			hwProtocol := binary.BigEndian.Uint16(ad.Bytes()[:2])
 			a.HwProtocol = &hwProtocol
-			hook := uint8(ad.Bytes()[3])
+			hook := uint8(ad.Bytes()[2])
 			a.Hook = &hook
 		case nfUlaAttrMark:
 			ad.ByteOrder = binary.BigEndian
