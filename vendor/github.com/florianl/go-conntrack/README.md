@@ -6,22 +6,30 @@ This is `go-conntrack` and it is written in [golang](https://golang.org/). It pr
 ## Example
 
 ```golang
+package main
+
+import (
+	"fmt"
+
+	"github.com/florianl/go-conntrack"
+)
+
 func main() {
-	nfct, err := ct.Open(&ct.Config{})
+	nfct, err := conntrack.Open(&conntrack.Config{})
 	if err != nil {
 		fmt.Println("could not create nfct:", err)
 		return
 	}
-    defer nfct.Close()
+	defer nfct.Close()
 
-    // Get all IPv4 entries of the expected table.
-	sessions, err := nfct.Dump(ct.Expected, ct.IPv4)
+	// Get all IPv4 entries of the expected table.
+	sessions, err := nfct.Dump(conntrack.Expected, conntrack.IPv4)
 	if err != nil {
 		fmt.Println("could not dump sessions:", err)
 		return
 	}
 
-    // Print out all expected sessions.
+	// Print out all expected sessions.
 	for _, session := range sessions {
 		fmt.Printf("%#v\n", session)
 	}
