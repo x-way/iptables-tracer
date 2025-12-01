@@ -3,8 +3,8 @@ github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbi
 github.com/cilium/ebpf v0.5.0/go.mod h1:4tRaxcgiL706VnOzHOdBlY8IEAIdxINsQBcU4xJJXRs=
 github.com/cilium/ebpf v0.7.0/go.mod h1:/oI2+1shJiTGAMgl6/RgJr36Eo1jzrRcAWbcXO2usCA=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/florianl/go-conntrack v0.4.0 h1:TlYkxytdwgVayfU0cKwkHurQA0Rd1ZSEBRckRYDUu18=
-github.com/florianl/go-conntrack v0.4.0/go.mod h1:iPDx4oIats2T7X7Jm3PFyRCJM1GfZhJaSHOWROYOrE8=
+github.com/florianl/go-conntrack v0.5.0 h1:1+749T6cgOgnqXyBtv42fcc1GZK1M9U5P6eCX6yZBGo=
+github.com/florianl/go-conntrack v0.5.0/go.mod h1:iPDx4oIats2T7X7Jm3PFyRCJM1GfZhJaSHOWROYOrE8=
 github.com/florianl/go-nflog/v2 v2.2.0 h1:25c3fv77e7j5Nr1uLPdvXNHDQpfkbWsfWhg0JYUJQnI=
 github.com/florianl/go-nflog/v2 v2.2.0/go.mod h1:n6j0kC+qiMz7vsUeFmfB1pInaDSXDO2RFT2C2U/Z81w=
 github.com/frankban/quicktest v1.11.3/go.mod h1:wRf/ReqHper53s+kmmSZizM8NamnL3IM0I9ntUbOk+k=

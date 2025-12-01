@@ -1,6 +1,7 @@
 package conntrack
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -74,7 +75,13 @@ type Nfct struct {
 
 	errChan chan error
 
+	debug bool
+
 	setWriteTimeout func() error
+
+	ctx       context.Context
+	ctxCancel context.CancelFunc
+	shutdown  chan struct{}
 
 	addConntrackInformation bool
 }
@@ -393,6 +400,8 @@ const (
 	AttrExpClass  ConnAttrType = iota /* u32 bits */
 	AttrExpNATDir ConnAttrType = iota /* u32 bits */
 
+	// for internal use only
+	attrUnspec ConnAttrType = iota
 )
 
 // Various errors which may occur when processing attributes
