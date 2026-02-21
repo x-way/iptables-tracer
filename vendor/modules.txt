@@ -1,4 +1,4 @@
-# github.com/florianl/go-conntrack v0.5.0
+# github.com/florianl/go-conntrack v0.6.0
 ## explicit; go 1.13
 github.com/florianl/go-conntrack
 github.com/florianl/go-conntrack/internal/unix
