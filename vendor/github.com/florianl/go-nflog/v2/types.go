@@ -121,8 +121,8 @@ type VLAN struct {
 
 // Logger provides logging functionality.
 type Logger interface {
-	Debugf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Errorf(format string, args ...any)
 }
 
 // Config contains options for a Conn.
