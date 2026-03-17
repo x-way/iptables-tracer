@@ -2,8 +2,8 @@
 ## explicit; go 1.15
 github.com/florianl/go-conntrack
 github.com/florianl/go-conntrack/internal/unix
-# github.com/florianl/go-nflog/v2 v2.2.0
-## explicit; go 1.18
+# github.com/florianl/go-nflog/v2 v2.3.0
+## explicit; go 1.24.0
 github.com/florianl/go-nflog/v2
 github.com/florianl/go-nflog/v2/internal/unix
 # github.com/google/go-cmp v0.7.0
@@ -17,7 +17,7 @@ github.com/google/go-cmp/cmp/internal/value
 ## explicit; go 1.12
 github.com/google/gopacket
 github.com/google/gopacket/layers
-# github.com/mdlayher/netlink v1.9.0
+# github.com/mdlayher/netlink v1.9.1-0.20260312172110-2a932c0fc1ae
 ## explicit; go 1.24.0
 github.com/mdlayher/netlink
 github.com/mdlayher/netlink/nlenc

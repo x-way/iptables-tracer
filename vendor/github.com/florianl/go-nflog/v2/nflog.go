@@ -36,8 +36,8 @@ var _ Logger = (*devNull)(nil)
 // devNull satisfies the Logger interface.
 type devNull struct{}
 
-func (dn *devNull) Debugf(format string, args ...interface{}) {}
-func (dn *devNull) Errorf(format string, args ...interface{}) {}
+func (dn *devNull) Debugf(format string, args ...any) {}
+func (dn *devNull) Errorf(format string, args ...any) {}
 
 // for detailes see https://github.com/tensorflow/tensorflow/blob/master/tensorflow/go/tensor.go#L488-L505
 var nativeEndian binary.ByteOrder
