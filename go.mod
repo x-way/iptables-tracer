@@ -7,7 +7,7 @@ require (
 	github.com/florianl/go-nflog/v2 v2.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/gopacket v1.1.19
-	github.com/mdlayher/netlink v1.9.1-0.20260312172110-2a932c0fc1ae
+	github.com/mdlayher/netlink v1.9.1-0.20260318211955-ccabe8e0fc68
 	github.com/x-way/pktdump v0.0.6
 )
 
