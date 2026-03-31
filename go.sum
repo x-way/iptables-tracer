@@ -13,8 +13,8 @@ github.com/mdlayher/netlink v1.6.2/go.mod h1:O1HXX2sIWSMJ3Qn1BYZk1yZM+7iMki/uYGG
 github.com/mdlayher/netlink v1.9.1-0.20260322151810-5af0e4f4cb1d h1:+yASKuzO/gxwNmJ32cGPZZjRanzAAAEvrxt4BsmjgN0=
 github.com/mdlayher/netlink v1.9.1-0.20260322151810-5af0e4f4cb1d/go.mod h1:YBnl5BXsCoRuwBjKKlZ+aYmEoq0r12FDA/3JC+94KDg=
 github.com/mdlayher/socket v0.2.3/go.mod h1:bz12/FozYNH/VbvC3q7TRIK/Y6dH1kCKsXaUeXi/FmY=
-github.com/mdlayher/socket v0.5.1 h1:VZaqt6RkGkt2OE9l3GcC6nZkqD3xKeQLyfleW/uBcos=
-github.com/mdlayher/socket v0.5.1/go.mod h1:TjPLHI1UgwEv5J1B5q0zTZq12A/6H7nKmtTanQE37IQ=
+github.com/mdlayher/socket v0.6.0 h1:ScZPaAGyO1icQnbFrhPM8mnXyMu9qukC1K4ZoM2IQKU=
+github.com/mdlayher/socket v0.6.0/go.mod h1:q7vozUAnxSqnjHc12Fik5yUKIzfZ8ITCfMkhOtE9z18=
 github.com/x-way/pktdump v0.0.6 h1:L+qxehNc2VM9fwlXOrwZo/1y2C88Rk8RS49zAmvL1tA=
 github.com/x-way/pktdump v0.0.6/go.mod h1:4+6eLfouhVeRv3wrV78UOX/E3lxq5ooJs8CWc5+LwxE=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
