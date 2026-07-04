@@ -24,8 +24,8 @@ github.com/mdlayher/netlink/nlenc
 # github.com/mdlayher/socket v0.6.1
 ## explicit; go 1.25.0
 github.com/mdlayher/socket
-# github.com/x-way/pktdump v0.0.6
-## explicit; go 1.19
+# github.com/x-way/pktdump v0.0.7
+## explicit; go 1.25.0
 github.com/x-way/pktdump
 # golang.org/x/net v0.56.0
 ## explicit; go 1.25.0

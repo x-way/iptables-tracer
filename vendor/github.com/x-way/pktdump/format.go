@@ -314,6 +314,7 @@ func formatPacketUDP(packet *gopacket.Packet, udp *layers.UDP, src, dst string) 
 
 func formatPacketOSPF(ospf layers.OSPF, src, dst string, length int) string {
 	var ospfType string
+	var invalid string
 	switch ospf.Type {
 	case layers.OSPFHello:
 		ospfType = "Hello"
@@ -330,9 +331,10 @@ func formatPacketOSPF(ospf layers.OSPF, src, dst string, length int) string {
 			ospfType = fmt.Sprintf("unknown packet type (%d)", ospf.Type)
 		} else {
 			ospfType = fmt.Sprintf("unknown LS-type %d", ospf.Type)
+			invalid = " (invalid)"
 		}
 	}
-	return fmt.Sprintf("%s > %s: OSPFv%d, %s, length %d", src, dst, ospf.Version, ospfType, length)
+	return fmt.Sprintf("%s > %s: OSPFv%d, %s, length %d%s", src, dst, ospf.Version, ospfType, length, invalid)
 }
 
 func formatPacketGRE(gre *layers.GRE, src, dst string, length int) string {
