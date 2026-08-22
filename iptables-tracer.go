@@ -90,10 +90,9 @@ func main() {
 
 	var nf *nflog.Nflog
 	config := nflog.Config{
-		Group:       uint16(*nflogGroup),
-		Copymode:    nflog.CopyPacket,
-		Flags:       nflog.FlagConntrack,
-		ReadTimeout: time.Second,
+		Group:    uint16(*nflogGroup),
+		Copymode: nflog.CopyPacket,
+		Flags:    nflog.FlagConntrack,
 	}
 	nf, err = nflog.Open(&config)
 	if err != nil {
