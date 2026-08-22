@@ -156,7 +156,7 @@ func resolveMarkFilterAndMerge(originalMarkFilter string, fwMark int) (string, b
 
 	var value int
 	var mask int
-	fmt.Sscanf(scan, "--mark %v/%v", &value, &mask)
+	_, _ = fmt.Sscanf(scan, "--mark %v/%v", &value, &mask)
 	if mask == 0 {
 		mask = 0xFFFFFFFF
 	}
