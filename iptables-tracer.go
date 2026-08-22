@@ -98,7 +98,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer nf.Close()
+	defer func() { _ = nf.Close() }()
 
 	ctx, cancel := context.WithTimeout(context.Background(), *traceDuration)
 	defer cancel()
@@ -217,7 +217,7 @@ func writeToCommand(cmd *exec.Cmd, lines []string) error {
 			log.Fatal(err)
 		}
 	}
-	cmdWriter.Close()
+	_ = cmdWriter.Close()
 	return cmd.Wait()
 }
 

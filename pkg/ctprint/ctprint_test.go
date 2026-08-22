@@ -100,7 +100,7 @@ func Test_Print(t *testing.T) {
 
 			ctprint.Print(tt.Bytes)
 
-			w.Close()
+			_ = w.Close()
 			obuf, _ := io.ReadAll(r)
 			os.Stdout = realStdout
 			got := string(obuf)
