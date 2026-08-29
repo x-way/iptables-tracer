@@ -59,6 +59,10 @@ var (
 func main() {
 	flag.Parse()
 
+	if *nflogGroup < 0 || *nflogGroup > 65535 {
+		log.Fatalf("Invalid NFLOG group %d: must be between 0 and 65535", *nflogGroup)
+	}
+
 	if *ip6tables {
 		saveCommand = "ip6tables-save"
 		restoreCommand = "ip6tables-restore"
@@ -90,7 +94,7 @@ func main() {
 
 	var nf *nflog.Nflog
 	config := nflog.Config{
-		Group:    uint16(*nflogGroup),
+		Group:    uint16(*nflogGroup), // #nosec G115 -- range-checked (0-65535) above
 		Copymode: nflog.CopyPacket,
 		Flags:    nflog.FlagConntrack,
 	}
