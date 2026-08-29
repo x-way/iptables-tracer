@@ -56,10 +56,17 @@ var (
 	restoreCommand string
 )
 
+// validNflogGroup reports whether g is a valid NFLOG group number. NFLOG
+// groups are a 16-bit kernel field, so anything outside 0-65535 would
+// silently wrap when narrowed to uint16.
+func validNflogGroup(g int) bool {
+	return g >= 0 && g <= 65535
+}
+
 func main() {
 	flag.Parse()
 
-	if *nflogGroup < 0 || *nflogGroup > 65535 {
+	if !validNflogGroup(*nflogGroup) {
 		log.Fatalf("Invalid NFLOG group %d: must be between 0 and 65535", *nflogGroup)
 	}
 
