@@ -53,6 +53,7 @@
         "golang.org/x/net",
         "golang.org/x/sync",
         "golang.org/x/sys",
+        "golang.org/x/term",
         "golang.org/x/text",
         "golang.org/x/time"
       ],
