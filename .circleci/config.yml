@@ -6,7 +6,7 @@ workflows:
   scheduled:
     triggers:
       - schedule:
-          cron: "1 2 * * 5"
+          cron: "1 2 1 * *"
           filters:
             branches:
               only:
